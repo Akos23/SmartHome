@@ -1,0 +1,41 @@
+.card {
+  position: absolute;
+  background-color: rgb(27 25 25);
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 70fr 2fr 885fr;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "header"
+    "line"
+    "body";
+}
+
+.card_header {
+  grid-area: header;
+  font-weight: 600;
+  font-size: large;
+  color: rgb(177, 169, 169);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+hr {
+  grid-area: line;
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  border-color: rgb(111, 171, 245);
+}
+
+.card_body {
+  grid-area: body;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
