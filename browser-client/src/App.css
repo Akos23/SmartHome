@@ -5,4 +5,11 @@
   color: white;
   text-align: center;
   background-color: black;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+  grid-gap: 5px;
+  padding: 5px;
 }
