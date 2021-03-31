@@ -1,0 +1,19 @@
+.stepperButton {
+  width: 20px;
+  height: 25px;
+  background-color: rgb(80, 67, 67);
+  border-radius: 5px;
+  cursor: pointer;
+  border-width: 1px;
+  border-color: rgb(112, 96, 214);
+  border-style: solid;
+  user-select: none;
+}
+
+.stepperContainer {
+  display: grid;
+  grid-template-columns: 22px 22px 44px 22px 22px;
+  grid-template-rows: 25px;
+  align-items: center;
+  grid-gap: 3px;
+}

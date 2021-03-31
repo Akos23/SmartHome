@@ -16,6 +16,7 @@ class NavigationMenu extends Component {
             { id: 1, name: "ceiling lights", type: "lamp", isOn: false },
             { id: 2, name: "dimmer lights", type: "slider" },
             { id: 3, name: "door", type: "lock" },
+            { id: 4, name: "window", type: "stepper" },
           ],
         },
         {

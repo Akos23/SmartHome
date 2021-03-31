@@ -3,6 +3,7 @@ import Switch from "./Switch";
 import "./Card.css";
 import Slider from "./Slider";
 import LockButton from "./LockButton";
+import StepperButton from "./StepperButton";
 
 class Card extends Component {
   onSwitchHandler = (device) => {
@@ -22,6 +23,9 @@ class Card extends Component {
         break;
       case "lock":
         component = <LockButton />;
+        break;
+      case "stepper":
+        component = <StepperButton />;
         break;
       default:
         component = <div>default</div>;
