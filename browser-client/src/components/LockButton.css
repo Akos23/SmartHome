@@ -1,0 +1,23 @@
+.lockButton {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  background-color: rgb(80, 67, 67, 0.8);
+  border-width: 1px;
+  border-style: solid;
+  border-color: green;
+  transition: 0.5s;
+}
+.lockButton[data-locked="true"] {
+  border-color: red;
+}
+
+.padlock {
+  width: 50px;
+  height: 50px;
+  transform: translate(1px, -1px);
+  transition: 0.5s;
+}

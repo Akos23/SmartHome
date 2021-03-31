@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Switch from "./Switch";
 import "./Card.css";
 import Slider from "./Slider";
+import LockButton from "./LockButton";
 
 class Card extends Component {
   onSwitchHandler = (device) => {
@@ -18,6 +19,9 @@ class Card extends Component {
         break;
       case "slider":
         component = <Slider />;
+        break;
+      case "lock":
+        component = <LockButton />;
         break;
       default:
         component = <div>default</div>;
