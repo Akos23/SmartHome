@@ -66,6 +66,41 @@ class Card extends Component {
           </React.Fragment>
         ));
         break;
+      case "rgb":
+        cardBody = (
+          <React.Fragment>
+            <div className="rgbSliderContainer">
+              <p className="rgbRedLabel">R</p>
+              <Slider />
+              <p className="rgbRedValue">val</p>
+              <p className="rgbGreenLabel">G</p>
+              <Slider />
+              <p className="rgbGreenValue">val</p>
+              <p className="rgbBlueLabel">B</p>
+              <Slider />
+              <p className="rgbBlueValue">val</p>
+            </div>
+            <div className="rgbEffectContainer">
+              <label className="rgbEffectCheckbox">
+                <input type="checkbox" name="checkbox" value="value" />
+                {"  activate lighting effect"}
+              </label>
+              <label className="rgbEffectRadio1">
+                <input type="radio" name="rgbEffect" value="value" />
+                {"  effect"}
+              </label>
+              <label className="rgbEffectRadio2">
+                <input type="radio" name="rgbEffect" value="value" />
+                {"  effect"}
+              </label>
+              <label className="rgbEffectRadio3">
+                <input type="radio" name="rgbEffect" value="value" />
+                {"  effect"}
+              </label>
+            </div>
+          </React.Fragment>
+        );
+        break;
       default:
         cardBody = <div>undefined card</div>;
     }

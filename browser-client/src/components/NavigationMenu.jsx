@@ -29,7 +29,7 @@ class NavigationMenu extends Component {
         { title: "Hall", type: "room", devices: [] },
         { title: "Garage", type: "room", devices: [] },
         { title: "Bathroom", type: "room", devices: [] },
-        { title: "RGB", type: "rgb", devices: [] },
+        { title: "Mood lighting", type: "rgb", devices: [] },
         { title: "History", type: "history", devices: [] },
         {
           title: "Wheather",
