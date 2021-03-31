@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Switch from "./Switch";
 import "./Card.css";
+import Slider from "./Slider";
 
 class Card extends Component {
   onSwitchHandler = (device) => {
@@ -14,6 +15,9 @@ class Card extends Component {
         component = (
           <Switch device={dev} onClickHandler={this.onSwitchHandler} />
         );
+        break;
+      case "slider":
+        component = <Slider />;
         break;
       default:
         component = <div>default</div>;
@@ -29,7 +33,7 @@ class Card extends Component {
         <hr />
         <div className={"card_body " + type}>
           {devices.map((dev) => (
-            <React.Fragment>
+            <React.Fragment key={dev.id}>
               <p>{dev.name}</p>
               {this.renderControl(dev)}
             </React.Fragment>

@@ -1,0 +1,24 @@
+.slidecontainer {
+  width: 120px;
+}
+
+/* The slider track */
+.slider {
+  -webkit-appearance: none; /* Override default CSS styles */
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  background: rgb(80, 67, 67);
+  outline: none;
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgb(224, 210, 210);
+  cursor: pointer; /* Cursor on hover */
+}

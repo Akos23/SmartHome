@@ -14,6 +14,7 @@ class NavigationMenu extends Component {
           devices: [
             { id: 0, name: "standing lamp", type: "lamp", isOn: true },
             { id: 1, name: "ceiling lights", type: "lamp", isOn: false },
+            { id: 2, name: "dimmer lights", type: "slider" },
           ],
         },
         {
