@@ -7,13 +7,13 @@
 .Tile.Bathroom {
   background-color: teal;
 }
-.Tile.Main {
+.Tile.Mainbedroom {
   background-color: tomato;
 }
-.Tile.Living {
+.Tile.Livingroom {
   background-color: violet;
 }
-.Tile.Guest.bedroom {
+.Tile.Guestbedroom {
   background-color: yellowgreen;
 }
 .Tile.Hall {

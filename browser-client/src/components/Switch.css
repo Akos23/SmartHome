@@ -1,0 +1,31 @@
+.switch {
+  position: relative;
+  height: 20px;
+  width: 50px;
+  border-radius: 10px;
+  appearance: none;
+  outline: none;
+  background-color: rgb(80, 67, 67);
+  box-shadow: 0 0 3px 1px inset rgba(0, 0, 0, 0.616);
+  transition: 0.5s;
+}
+
+.switch:checked {
+  background-color: green;
+}
+
+.switch::before {
+  position: absolute;
+  content: "";
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgb(224, 210, 210);
+  top: 0;
+  left: 0;
+  transition: 0.5s ease-out;
+}
+
+.switch:checked::before {
+  left: 30px;
+}
