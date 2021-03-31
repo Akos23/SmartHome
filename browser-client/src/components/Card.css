@@ -46,3 +46,49 @@ hr {
   justify-items: center;
   align-items: center;
 }
+
+.card_body.wheather {
+  display: grid;
+  height: 70%;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 7fr 1fr 1fr 1fr 1fr;
+  justify-items: center;
+  grid-template-areas:
+    "temp img"
+    "br ."
+    "hum ."
+    "rain ."
+    "wind .";
+}
+
+.temperaturValue {
+  grid-area: temp;
+  font-size: 65px;
+}
+
+.wheatherImage {
+  grid-area: img;
+  margin-top: 60px;
+  width: 150px;
+  height: 150px;
+}
+
+.wheatherLabel {
+  position: absolute;
+  left: 30px;
+}
+.wheatherLabel.brightness {
+  grid-area: br;
+}
+
+.wheatherLabel.humidity {
+  grid-area: hum;
+}
+
+.wheatherLabel.rain {
+  grid-area: rain;
+}
+
+.wheatherLabel.wind {
+  grid-area: wind;
+}

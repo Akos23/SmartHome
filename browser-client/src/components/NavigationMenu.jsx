@@ -31,7 +31,17 @@ class NavigationMenu extends Component {
         { title: "Bathroom", type: "room", devices: [] },
         { title: "RGB", type: "rgb", devices: [] },
         { title: "History", type: "history", devices: [] },
-        { title: "Wheather", type: "wheather", devices: [] },
+        {
+          title: "Wheather",
+          type: "wheather",
+          measurments: {
+            degrees: 23,
+            humidity: 15,
+            rain: 0,
+            brightness: 60,
+            wind: 10,
+          },
+        },
         { title: "General", type: "general", devices: [] },
       ],
     };

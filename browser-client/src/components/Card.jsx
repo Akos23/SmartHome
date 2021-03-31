@@ -4,13 +4,17 @@ import "./Card.css";
 import Slider from "./Slider";
 import LockButton from "./LockButton";
 import StepperButton from "./StepperButton";
+import clearSunny from "./icons/wheather/day_clear.svg";
+import partialCloud from "./icons/wheather/day_partial_cloud.svg";
+import cloudy from "./icons/wheather/cloudy.svg";
+import rainy from "./icons/wheather/day_rain.svg";
 
 class Card extends Component {
   onSwitchHandler = (device) => {
     this.props.handleSwitch(this.props.card, device);
   };
 
-  renderControl = (dev) => {
+  renderControls = (dev) => {
     let component;
     switch (dev.type) {
       case "lamp":
@@ -33,19 +37,49 @@ class Card extends Component {
     return component;
   };
 
+  renderBody = (card) => {
+    let cardBody;
+    switch (card.type) {
+      case "wheather":
+        const { degrees, humidity, brightness, rain, wind } = card.measurments;
+        cardBody = (
+          <React.Fragment>
+            <div>
+              <p className="temperaturValue">{degrees}&#8451;</p>
+            </div>
+            <img className="wheatherImage" src={rainy} />
+            <p className="wheatherLabel brightness">
+              {" "}
+              brightness : {brightness} %
+            </p>
+            <p className="wheatherLabel humidity">humidity : {humidity} % </p>
+            <p className="wheatherLabel rain">precipitation : {rain} %</p>
+            <p className="wheatherLabel wind">wind : {wind} km/h</p>
+          </React.Fragment>
+        );
+        break;
+      case "room":
+        cardBody = card.devices.map((dev) => (
+          <React.Fragment key={dev.id}>
+            <p>{dev.name}</p>
+            {this.renderControls(dev)}
+          </React.Fragment>
+        ));
+        break;
+      default:
+        cardBody = <div>undefined card</div>;
+    }
+    return cardBody;
+  };
+
   render() {
-    const { title, type, devices } = this.props.card;
+    const { title, type } = this.props.card;
     return (
       <div className="card ">
         <header className="card_header"> {title} </header>
         <hr />
         <div className={"card_body " + type}>
-          {devices.map((dev) => (
-            <React.Fragment key={dev.id}>
-              <p>{dev.name}</p>
-              {this.renderControl(dev)}
-            </React.Fragment>
-          ))}
+          {this.renderBody(this.props.card)}
         </div>
       </div>
     );
