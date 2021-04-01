@@ -25,7 +25,7 @@
   justify-content: center;
 }
 
-hr {
+.card_decorLine {
   grid-area: line;
   position: absolute;
   left: 18px;
@@ -177,4 +177,101 @@ hr {
   grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   justify-items: center;
   align-items: center;
+}
+
+/*History - card body Layout*/
+.card_body.history {
+  height: 85%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 6fr;
+  justify-items: center;
+  align-items: center;
+  grid-template-areas:
+    "ddown"
+    "log";
+}
+
+.customSelect {
+  grid-area: ddown;
+  height: 25px;
+  width: 220px;
+  background-color: rgb(157, 157, 168);
+  border-radius: 10px;
+  outline: none;
+  text-align-last: center;
+  font-weight: bold;
+}
+
+.logMsgContainer {
+  grid-area: log;
+  position: absolute;
+  height: 90%;
+  width: 70%;
+  background-color: rgba(202, 202, 255, 0);
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logMsgDecorlineTop {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  border: none;
+  margin: 0;
+  box-shadow: 0 0 15px 5px rgb(111, 171, 245);
+}
+
+.logMsgDecorlineBottom {
+  position: absolute;
+  bottom: 0px;
+  width: 100%;
+  border: none;
+  margin: 0;
+  box-shadow: 0 0 15px 5px rgb(111, 171, 245);
+}
+
+.messages {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 2px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f100;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.messageBox {
+  width: 90%;
+  height: 20%;
+  border: grey;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 10px;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+}
+
+.messageBox div {
+  text-align: left;
 }

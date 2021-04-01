@@ -30,7 +30,48 @@ class NavigationMenu extends Component {
         { title: "Garage", type: "room", devices: [] },
         { title: "Bathroom", type: "room", devices: [] },
         { title: "Mood lighting", type: "rgb", devices: [] },
-        { title: "History", type: "history", devices: [] },
+        {
+          title: "History",
+          type: "history",
+          logs: [
+            {
+              time: "01/04/2021 08:55",
+              name: "Dabasi Akos",
+              action: "opened front door",
+            },
+            {
+              time: "01/04/2021 08:55",
+              name: "Dabasi Akos",
+              action: "turned off the alarm",
+            },
+            {
+              time: "01/04/2021 09:55",
+              name: "Dabasi Akos",
+              action: "closed front door",
+            },
+            {
+              time: "01/04/2021 09:55",
+              name: "Dabasi Akos",
+              action: "set alarm",
+            },
+            {
+              time: "01/04/2021 10:55",
+              name: "Unknown",
+              action: "tried to open front door",
+            },
+            { time: "01/04/2021 11:55", name: " - ", action: "alarm went off" },
+            {
+              time: "01/04/2021 12:00",
+              name: "Dabasi Akos",
+              action: "turned off alarm",
+            },
+            {
+              time: "01/04/2021 13:55",
+              name: "Dabasi Akos",
+              action: "opened front door",
+            },
+          ],
+        },
         {
           title: "Wheather",
           type: "wheather",

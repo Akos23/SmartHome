@@ -106,6 +106,36 @@ class Card extends Component {
           </React.Fragment>
         );
         break;
+      case "history":
+        cardBody = (
+          <React.Fragment>
+            <select className="customSelect">
+              <option value="0">int the last hour</option>
+              <option value="1">in the last day</option>
+              <option value="2">in the last 2 days</option>
+              <option value="3">in the last week</option>
+              <option value="4">in the last 2 weeks</option>
+            </select>
+
+            <div className="logMsgContainer">
+              <hr className="logMsgDecorlineTop" />
+              <div className="messages">
+                {card.logs.map((message) => (
+                  <div className="messageBox">
+                    <div>
+                      <div>time: {message.time}</div>
+                      <div>user: {message.name}</div>
+                      <div>action: {message.action}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <hr className="logMsgDecorlineBottom" />
+            </div>
+          </React.Fragment>
+        );
+        break;
       default:
         cardBody = <div>undefined card</div>;
     }
@@ -117,7 +147,7 @@ class Card extends Component {
     return (
       <div className="card ">
         <header className="card_header"> {title} </header>
-        <hr />
+        <hr className="card_decorLine" />
         <div className={"card_body " + type}>
           {this.renderBody(this.props.card)}
         </div>
