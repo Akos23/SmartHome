@@ -17,6 +17,7 @@ class Card extends Component {
   renderControls = (dev) => {
     let component;
     switch (dev.type) {
+      case "switch":
       case "lamp":
         component = (
           <Switch device={dev} onClickHandler={this.onSwitchHandler} />
@@ -30,6 +31,9 @@ class Card extends Component {
         break;
       case "stepper":
         component = <StepperButton />;
+        break;
+      case "indicator":
+        component = <label>{dev.value}</label>;
         break;
       default:
         component = <div>default</div>;
@@ -58,6 +62,7 @@ class Card extends Component {
           </React.Fragment>
         );
         break;
+      case "general":
       case "room":
         cardBody = card.devices.map((dev) => (
           <React.Fragment key={dev.id}>

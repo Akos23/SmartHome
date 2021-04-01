@@ -42,7 +42,22 @@ class NavigationMenu extends Component {
             wind: 10,
           },
         },
-        { title: "General", type: "general", devices: [] },
+        {
+          title: "General",
+          type: "general",
+          devices: [
+            {
+              id: 0,
+              name: "room temperature",
+              type: "indicator",
+              value: "23°C",
+            },
+            { id: 1, name: "set temperature", type: "stepper" },
+            { id: 2, name: "power saving mode", type: "switch", isOn: false },
+            { id: 3, name: "main power", type: "switch", isOn: true },
+            { id: 4, name: "alarm", type: "switch", isOn: false },
+          ],
+        },
       ],
     };
   }

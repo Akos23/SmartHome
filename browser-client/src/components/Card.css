@@ -1,3 +1,5 @@
+/*General Styles*/
+
 .card {
   position: absolute;
   background-color: rgb(27 25 25);
@@ -39,6 +41,8 @@ hr {
   padding-top: 20px;
 }
 
+/* Room - card body Layout*/
+
 .card_body.room {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -46,6 +50,8 @@ hr {
   justify-items: center;
   align-items: center;
 }
+
+/*Wheather - card body Layout*/
 
 .card_body.wheather {
   display: grid;
@@ -92,6 +98,8 @@ hr {
 .wheatherLabel.wind {
   grid-area: wind;
 }
+
+/*RGB - card body Layout*/
 
 .card_body.rgb {
   display: grid;
@@ -160,4 +168,13 @@ hr {
   grid-area: eff3;
   position: absolute;
   left: 60px;
+}
+
+/*General - card body Layout*/
+.card_body.general {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
 }
