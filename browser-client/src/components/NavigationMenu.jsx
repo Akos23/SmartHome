@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Route, Link } from "react-router-dom";
 import Card from "./Card";
 import "./NavigationMenu.css";
+import Switch from "./Switch";
 
 class NavigationMenu extends Component {
   constructor(props) {
@@ -100,6 +101,10 @@ class NavigationMenu extends Component {
           ],
         },
       ],
+      overview: {
+        title: "Overview",
+        isOn: true,
+      },
     };
   }
 
@@ -127,22 +132,33 @@ class NavigationMenu extends Component {
   };
 
   render() {
-    return this.state.cards.map((card) => {
-      let { title } = card;
-      return (
-        <React.Fragment key={title}>
-          <div className={"Tile " + title.replace(/\s+/g, "")}>
-            <Link to={title}>{title}</Link>
-          </div>
-          <Route
-            path={"/" + title}
-            render={(props) => (
-              <Card card={card} handleSwitch={this.handleLightSwitch} />
-            )}
-          />
-        </React.Fragment>
-      );
-    });
+    return (
+      <React.Fragment>
+        {this.state.cards.map((card) => {
+          let { title } = card;
+          return (
+            <React.Fragment key={title}>
+              <div className={"Tile " + title.replace(/\s+/g, "")}>
+                <Link to={title}>{title}</Link>
+              </div>
+              <Route
+                path={"/" + title}
+                render={(props) => (
+                  <Card card={card} handleSwitch={this.handleLightSwitch} />
+                )}
+              />
+            </React.Fragment>
+          );
+        })}
+        <div
+          className={"Tile " + this.state.overview.title.replace(/\s+/g, "")}
+        >
+          <label>{this.state.overview.title}</label>
+          <div className="movementIndicator"></div>
+          <div className="lightsIndicator"></div>
+        </div>
+      </React.Fragment>
+    );
   }
 }
 

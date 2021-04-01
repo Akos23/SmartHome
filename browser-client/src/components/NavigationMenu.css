@@ -31,6 +31,10 @@
 .Tile.History {
   background-color: royalblue;
 }
+.Tile.Overview {
+  background-color: rgb(235, 182, 37);
+}
+
 a {
   position: absolute;
   width: 100%;
@@ -41,4 +45,32 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.Tile.Overview label {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  font-weight: bolder;
+  color: rgb(233, 238, 245);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.movementIndicator {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: red;
+  margin: 5px;
+}
+
+.lightsIndicator {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background-color: rgb(251, 255, 0);
+  margin: 5px;
 }
