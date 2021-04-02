@@ -35,7 +35,33 @@ class NavigationMenu extends Component {
         { title: "Hall", type: "room", devices: [] },
         { title: "Garage", type: "room", devices: [] },
         { title: "Bathroom", type: "room", devices: [] },
-        { title: "Mood lighting", type: "rgb", devices: [] },
+        {
+          title: "Mood lighting",
+          type: "rgb",
+          devices: [
+            {
+              id: 0,
+              name: "redLed",
+              letter: "R",
+              type: "rgb-slider",
+              value: 0,
+            },
+            {
+              id: 1,
+              name: "greenLed",
+              letter: "G",
+              type: "rgb-slider",
+              value: 0,
+            },
+            {
+              id: 2,
+              name: "blueLed",
+              letter: "B",
+              type: "rgb-slider",
+              value: 0,
+            },
+          ],
+        },
         {
           title: "History",
           type: "history",

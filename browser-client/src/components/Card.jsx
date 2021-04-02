@@ -42,6 +42,19 @@ class Card extends Component {
           />
         );
         break;
+      case "rgb-slider":
+        component = (
+          <Slider
+            value={dev.value}
+            min={0}
+            max={255}
+            device={dev}
+            onChangeHandler={(device, newValue) =>
+              onSliderHandler(card, device, newValue)
+            }
+          />
+        );
+        break;
       case "lock":
         component = (
           <LockButton
@@ -122,43 +135,16 @@ class Card extends Component {
         ));
         break;
       case "rgb":
-        const { redLed, greenLed, blueLed } = card.rgbLight;
         cardBody = (
           <React.Fragment>
             <div className="rgbSliderContainer">
-              <p className="rgbRedLabel">R</p>
-              <Slider
-                value={redLed.value}
-                min={0}
-                max={255}
-                device={redLed}
-                onChangeHandler={(device, newValue) =>
-                  onSliderHandler(card, device, newValue)
-                }
-              />
-              <p className="rgbRedValue">{redLed.value}</p>
-              <p className="rgbGreenLabel">G</p>
-              <Slider
-                value={greenLed.value}
-                min={0}
-                max={255}
-                device={greenLed}
-                onChangeHandler={(device, newValue) =>
-                  onSliderHandler(card, device, newValue)
-                }
-              />
-              <p className="rgbGreenValue">{greenLed.value}</p>
-              <p className="rgbBlueLabel">B</p>
-              <Slider
-                value={blueLed.value}
-                min={0}
-                max={255}
-                device={blueLed}
-                onChangeHandler={(device, newValue) =>
-                  card.onSliderHandler(card, device, newValue)
-                }
-              />
-              <p className="rgbBlueValue">{blueLed.value}</p>
+              {card.devices.map((dev) => (
+                <React.Fragment key={dev.id}>
+                  <p className={dev.name + "Label"}>{dev.letter}</p>
+                  {this.renderControls(dev)}
+                  <p className={dev.name + "Value"}>{dev.value}</p>
+                </React.Fragment>
+              ))}
             </div>
             <div className="rgbEffectContainer">
               <label className="rgbEffectCheckbox">
