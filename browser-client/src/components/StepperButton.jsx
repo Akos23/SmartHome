@@ -2,55 +2,59 @@ import React, { Component } from "react";
 import "./StepperButton.css";
 
 class StepperButton extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: 10,
-    };
-  }
-
-  handleOnClickOpen = () => {
-    this.setState({ value: 100 });
-  };
-  handleOnClickClose = () => {
-    this.setState({ value: 0 });
-  };
-  handleOnIncrement = () => {
-    const value = this.state.value + 10 > 100 ? 100 : this.state.value + 10;
-    this.setState({ value });
-  };
-  handleOnDecrement = () => {
-    const value = this.state.value - 10 < 0 ? 0 : this.state.value - 10;
-    this.setState({ value });
-  };
   render() {
+    const { value, unit, step, min, max, device, onClickHandler } = this.props;
+    const putCloseOpenButtons = min && max ? true : false;
+    console.log(putCloseOpenButtons);
     return (
-      <div className="stepperContainer">
+      <div className="stepperContainer" data-minmax={putCloseOpenButtons}>
+        {/*Close button (<<)*/}
+        {putCloseOpenButtons && (
+          <div
+            className="stepperButton"
+            onClick={() => {
+              if (value === min) return;
+              this.onClickHandler(min, device);
+            }}
+          >
+            &laquo;
+          </div>
+        )}
+        {/*Decrement button (<)*/}
         <div
-          className="stepperButton closeButton"
-          onClick={() => this.handleOnClickClose()}
-        >
-          &laquo;
-        </div>
-        <div
-          className="stepperButton decrement"
-          onClick={() => this.handleOnDecrement()}
+          className="stepperButton"
+          onClick={() => {
+            if (value === min) return;
+            const newValue = value - step < min ? min : value - step;
+            this.onClickHandler(newValue, device);
+          }}
         >
           &lsaquo;
         </div>
-        <div>{this.state.value + "%"}</div>
+        <div>{value + unit}</div>
+        {/*Increment button (>) */}
         <div
-          className="stepperButton increment"
-          onClick={() => this.handleOnIncrement()}
+          className="stepperButton"
+          onClick={() => {
+            if (value === max) return;
+            const newValue = value + step > max ? max : value + step;
+            this.onClickHandler(newValue, device);
+          }}
         >
           &rsaquo;
         </div>
-        <div
-          className="stepperButton openButton"
-          onClick={() => this.handleOnClickOpen()}
-        >
-          &raquo;
-        </div>
+        {/*Open button (>>) */}
+        {putCloseOpenButtons && (
+          <div
+            className="stepperButton"
+            onClick={() => {
+              if (value === max) return;
+              onClickHandler(max, device);
+            }}
+          >
+            &raquo;
+          </div>
+        )}
       </div>
     );
   }

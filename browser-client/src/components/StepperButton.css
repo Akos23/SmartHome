@@ -1,3 +1,15 @@
+.stepperContainer {
+  display: grid;
+  grid-template-columns: 22px 22px 44px 22px 22px;
+  grid-template-rows: 25px;
+  align-items: center;
+  grid-gap: 3px;
+}
+
+.stepperContainer[data-minmax="false"] {
+  grid-template-columns: 22px 44px 22px;
+}
+
 .stepperButton {
   width: 20px;
   height: 25px;
@@ -8,12 +20,4 @@
   border-color: rgb(112, 96, 214);
   border-style: solid;
   user-select: none;
-}
-
-.stepperContainer {
-  display: grid;
-  grid-template-columns: 22px 22px 44px 22px 22px;
-  grid-template-rows: 25px;
-  align-items: center;
-  grid-gap: 3px;
 }
