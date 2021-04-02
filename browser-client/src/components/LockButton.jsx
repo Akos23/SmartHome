@@ -11,7 +11,7 @@ class LockButton extends Component {
     return (
       <div
         className="lockButton"
-        onClick={() => onClickHandler(!isLocked, device)}
+        onClick={() => onClickHandler(device, !isLocked)}
         data-locked={isLocked}
       >
         <img

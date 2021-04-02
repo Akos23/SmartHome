@@ -26,7 +26,7 @@ class StepperButton extends Component {
           onClick={() => {
             if (value === min) return;
             const newValue = value - step < min ? min : value - step;
-            this.onClickHandler(newValue, device);
+            this.onClickHandler(device, newValue);
           }}
         >
           &lsaquo;

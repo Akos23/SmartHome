@@ -10,30 +10,77 @@ import cloudy from "./icons/wheather/cloudy.svg";
 import rainy from "./icons/wheather/day_rain.svg";
 
 class Card extends Component {
-  onSwitchHandler = (device) => {
-    this.props.handleSwitch(this.props.card, device);
-  };
-
   renderControls = (dev) => {
+    const {
+      card,
+      onSwitchHandler,
+      onSliderHandler,
+      onLockButtonHandler,
+      onStepperHandler,
+    } = this.props;
     let component;
     switch (dev.type) {
       case "switch":
       case "lamp":
         component = (
-          <Switch device={dev} onClickHandler={this.onSwitchHandler} />
+          <Switch
+            device={dev}
+            onClickHandler={(device) => onSwitchHandler(card, device)}
+          />
         );
         break;
       case "slider":
-        component = <Slider />;
+        component = (
+          <Slider
+            value={dev.value}
+            device={dev}
+            onChangeHandler={(device, newValue) =>
+              onSliderHandler(card, device, newValue)
+            }
+          />
+        );
         break;
       case "lock":
-        component = <LockButton />;
+        component = (
+          <LockButton
+            isLocked={dev.isLocked}
+            device={dev}
+            onClickHandler={(device, newValue) =>
+              onLockButtonHandler(card, device, newValue)
+            }
+          />
+        );
         break;
-      case "stepper":
-        component = <StepperButton />;
+      case "window-stepper":
+        component = (
+          <StepperButton
+            value={dev.value}
+            unit={dev.unit}
+            step={10}
+            min={0}
+            max={120}
+            device={dev}
+            onClickHandler={(device, newValue) =>
+              onStepperHandler(card, device, newValue)
+            }
+          />
+        );
+        break;
+      case "temp-stepper":
+        component = (
+          <StepperButton
+            value={dev.value}
+            unit={dev.unit}
+            step={1}
+            device={dev}
+            onClickHandler={(device, newValue) =>
+              onStepperHandler(card, device, newValue)
+            }
+          />
+        );
         break;
       case "indicator":
-        component = <label>{dev.value}</label>;
+        component = <label>{dev.value + dev.unit}</label>;
         break;
       default:
         component = <div>default</div>;
@@ -57,7 +104,7 @@ class Card extends Component {
               brightness : {brightness} %
             </p>
             <p className="wheatherLabel humidity">humidity : {humidity} % </p>
-            <p className="wheatherLabel rain">precipitation : {rain} %</p>
+            <p className="wheatherLabel rain">precipitation : {rain} mm</p>
             <p className="wheatherLabel wind">wind : {wind} km/h</p>
           </React.Fragment>
         );
@@ -72,18 +119,44 @@ class Card extends Component {
         ));
         break;
       case "rgb":
+        const { redLed, greenLed, blueLed } = card.rgbLight;
+        const { onSliderHandler } = card;
         cardBody = (
           <React.Fragment>
             <div className="rgbSliderContainer">
               <p className="rgbRedLabel">R</p>
-              <Slider />
-              <p className="rgbRedValue">val</p>
+              <Slider
+                value={redLed.value}
+                min={0}
+                max={255}
+                device={redLed}
+                onChangeHandler={(device, newValue) =>
+                  onSliderHandler(card, device, newValue)
+                }
+              />
+              <p className="rgbRedValue">{redLed.value}</p>
               <p className="rgbGreenLabel">G</p>
-              <Slider />
-              <p className="rgbGreenValue">val</p>
+              <Slider
+                value={greenLed.value}
+                min={0}
+                max={255}
+                device={greenLed}
+                onChangeHandler={(device, newValue) =>
+                  onSliderHandler(card, device, newValue)
+                }
+              />
+              <p className="rgbGreenValue">{greenLed.value}</p>
               <p className="rgbBlueLabel">B</p>
-              <Slider />
-              <p className="rgbBlueValue">val</p>
+              <Slider
+                value={blueLed.value}
+                min={0}
+                max={255}
+                device={blueLed}
+                onChangeHandler={(device, newValue) =>
+                  card.onSliderHandler(card, device, newValue)
+                }
+              />
+              <p className="rgbBlueValue">{blueLed.value}</p>
             </div>
             <div className="rgbEffectContainer">
               <label className="rgbEffectCheckbox">
@@ -92,15 +165,15 @@ class Card extends Component {
               </label>
               <label className="rgbEffectRadio1">
                 <input type="radio" name="rgbEffect" value="value" />
-                {"  effect"}
+                {"  effect1"}
               </label>
               <label className="rgbEffectRadio2">
                 <input type="radio" name="rgbEffect" value="value" />
-                {"  effect"}
+                {"  effect2"}
               </label>
               <label className="rgbEffectRadio3">
                 <input type="radio" name="rgbEffect" value="value" />
-                {"  effect"}
+                {"  effect3"}
               </label>
             </div>
           </React.Fragment>
