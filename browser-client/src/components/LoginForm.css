@@ -1,0 +1,45 @@
+.loginForm {
+  width: 70%;
+  height: 140px;
+  margin: 0 auto;
+  margin-top: 100px;
+}
+
+.loginContainer {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr;
+  grid-gap: 8px;
+}
+
+.loginContainer input,
+button {
+  -webkit-appearance: none;
+  border-radius: 12px;
+  border-width: 1px;
+  border-style: solid;
+  outline: none;
+}
+.loginContainer input {
+  background-color: rgb(179, 167, 167);
+  border-width: 1px;
+  border-color: greenyellow;
+  border-style: solid;
+  text-align: center;
+}
+
+.loginContainer input:focus {
+  background-color: whitesmoke;
+}
+
+.loginContainer button {
+  box-shadow: 0 0 5px 1px whitesmoke;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.loginContainer label {
+  font-size: x-large;
+}

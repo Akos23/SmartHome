@@ -1,3 +1,14 @@
+.navMenuContainer {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+  grid-gap: 5px;
+}
+
 .Tile {
   position: relative;
   width: 100%;

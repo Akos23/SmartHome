@@ -133,18 +133,22 @@ class NavigationMenu extends Component {
 
   render() {
     return (
-      <React.Fragment>
+      <div className="navMenuContainer">
         {this.state.cards.map((card) => {
           let { title } = card;
           return (
             <React.Fragment key={title}>
               <div className={"Tile " + title.replace(/\s+/g, "")}>
-                <Link to={title}>{title}</Link>
+                <Link to={"home/" + title}>{title}</Link>
               </div>
               <Route
-                path={"/" + title}
+                path={"/home/" + title}
                 render={(props) => (
-                  <Card card={card} handleSwitch={this.handleLightSwitch} />
+                  <Card
+                    {...props}
+                    card={card}
+                    handleSwitch={this.handleLightSwitch}
+                  />
                 )}
               />
             </React.Fragment>
@@ -157,7 +161,7 @@ class NavigationMenu extends Component {
           <div className="movementIndicator"></div>
           <div className="lightsIndicator"></div>
         </div>
-      </React.Fragment>
+      </div>
     );
   }
 }
