@@ -16,7 +16,6 @@ class Slider extends Component {
           onChange={() => {
             const slider = document.getElementById(device.id);
             const newValue = slider.value;
-            console.log(newValue);
             onChangeHandler(device, newValue);
           }}
         />

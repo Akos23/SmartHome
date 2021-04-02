@@ -4,8 +4,7 @@ import "./StepperButton.css";
 class StepperButton extends Component {
   render() {
     const { value, unit, step, min, max, device, onClickHandler } = this.props;
-    const putCloseOpenButtons = min && max ? true : false;
-    console.log(putCloseOpenButtons);
+    const putCloseOpenButtons = min != undefined && max != undefined;
     return (
       <div className="stepperContainer" data-minmax={putCloseOpenButtons}>
         {/*Close button (<<)*/}
@@ -14,7 +13,7 @@ class StepperButton extends Component {
             className="stepperButton"
             onClick={() => {
               if (value === min) return;
-              this.onClickHandler(min, device);
+              onClickHandler(device, min);
             }}
           >
             &laquo;
@@ -26,7 +25,7 @@ class StepperButton extends Component {
           onClick={() => {
             if (value === min) return;
             const newValue = value - step < min ? min : value - step;
-            this.onClickHandler(device, newValue);
+            onClickHandler(device, newValue);
           }}
         >
           &lsaquo;
@@ -38,7 +37,7 @@ class StepperButton extends Component {
           onClick={() => {
             if (value === max) return;
             const newValue = value + step > max ? max : value + step;
-            this.onClickHandler(newValue, device);
+            onClickHandler(device, newValue);
           }}
         >
           &rsaquo;
@@ -49,7 +48,7 @@ class StepperButton extends Component {
             className="stepperButton"
             onClick={() => {
               if (value === max) return;
-              onClickHandler(max, device);
+              onClickHandler(device, max);
             }}
           >
             &raquo;

@@ -9,7 +9,7 @@ class Switch extends Component {
         className={"switch " + (className ? className : "")}
         type="checkbox"
         checked={device.isOn}
-        onChange={() => onClickHandler(this.props.device)}
+        onChange={() => onClickHandler(this.props.device, !device.isOn)}
       />
     );
   }

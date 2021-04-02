@@ -14,9 +14,15 @@ class NavigationMenu extends Component {
           devices: [
             { id: 0, name: "standing lamp", type: "lamp", isOn: true },
             { id: 1, name: "ceiling lights", type: "lamp", isOn: false },
-            { id: 2, name: "dimmer lights", type: "slider" },
-            { id: 3, name: "door", type: "lock" },
-            { id: 4, name: "window", type: "stepper" },
+            { id: 2, name: "dimmer lights", type: "slider", value: 0 },
+            { id: 3, name: "door", type: "lock", isLocked: false },
+            {
+              id: 4,
+              name: "window",
+              type: "window-stepper",
+              value: 0,
+              unit: "°",
+            },
           ],
         },
         {
@@ -93,7 +99,7 @@ class NavigationMenu extends Component {
               type: "indicator",
               value: "23°C",
             },
-            { id: 1, name: "set temperature", type: "stepper" },
+            { id: 1, name: "set temperature", type: "temp-stepper" },
             { id: 2, name: "power saving mode", type: "switch", isOn: false },
             { id: 3, name: "main power", type: "switch", isOn: true },
             { id: 4, name: "alarm", type: "switch", isOn: false },
@@ -107,7 +113,7 @@ class NavigationMenu extends Component {
     };
   }
 
-  handleLightSwitch = (card, device) => {
+  handleChange = (card, device, propName, newValue) => {
     //Copy the cards array
     const cards = [...this.state.cards];
 
@@ -125,8 +131,28 @@ class NavigationMenu extends Component {
     };
 
     //Set the new value for this device
-    cards[index].devices[devIndex].isOn = !cards[index].devices[devIndex].isOn;
+    cards[index].devices[devIndex][propName] = newValue;
 
+    return cards;
+  };
+
+  handleSwitch = (card, device, newValue) => {
+    const cards = this.handleChange(card, device, "isOn", newValue);
+    this.setState({ cards });
+  };
+
+  handleSlider = (card, device, newValue) => {
+    const cards = this.handleChange(card, device, "value", newValue);
+    this.setState({ cards });
+  };
+
+  handleLockButton = (card, device, newValue) => {
+    const cards = this.handleChange(card, device, "isLocked", newValue);
+    this.setState({ cards });
+  };
+
+  handleStepper = (card, device, newValue) => {
+    const cards = this.handleChange(card, device, "value", newValue);
     this.setState({ cards });
   };
 
@@ -146,7 +172,10 @@ class NavigationMenu extends Component {
                   <Card
                     {...props}
                     card={card}
-                    handleSwitch={this.handleLightSwitch}
+                    onSwitchHandler={this.handleSwitch}
+                    onSliderHandler={this.handleSlider}
+                    onLockButtonHandler={this.handleLockButton}
+                    onStepperHandler={this.handleStepper}
                   />
                 )}
               />

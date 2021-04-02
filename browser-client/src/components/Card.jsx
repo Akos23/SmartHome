@@ -25,7 +25,9 @@ class Card extends Component {
         component = (
           <Switch
             device={dev}
-            onClickHandler={(device) => onSwitchHandler(card, device)}
+            onClickHandler={(device, newValue) =>
+              onSwitchHandler(card, device, newValue)
+            }
           />
         );
         break;
@@ -88,8 +90,9 @@ class Card extends Component {
     return component;
   };
 
-  renderBody = (card) => {
+  renderBody = () => {
     let cardBody;
+    const { card, onSliderHandler } = this.props;
     switch (card.type) {
       case "wheather":
         const { degrees, humidity, brightness, rain, wind } = card.measurments;
@@ -120,7 +123,6 @@ class Card extends Component {
         break;
       case "rgb":
         const { redLed, greenLed, blueLed } = card.rgbLight;
-        const { onSliderHandler } = card;
         cardBody = (
           <React.Fragment>
             <div className="rgbSliderContainer">
@@ -221,9 +223,7 @@ class Card extends Component {
       <div className="card ">
         <header className="card_header"> {title} </header>
         <hr className="card_decorLine" />
-        <div className={"card_body " + type}>
-          {this.renderBody(this.props.card)}
-        </div>
+        <div className={"card_body " + type}>{this.renderBody()}</div>
       </div>
     );
   }
