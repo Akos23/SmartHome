@@ -6,27 +6,18 @@ import lockOpen from "./icons/r_lock_open.svg";
 import lockClosed from "./icons/r_lock_closed.svg";
 
 class LockButton extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      locked: true,
-    };
-  }
-  onClickHandler = () => {
-    const locked = !this.state.locked;
-    this.setState({ locked });
-  };
   render() {
+    const { isLocked, device, onClickHandler } = this.props;
     return (
       <div
         className="lockButton"
-        onClick={() => this.onClickHandler()}
-        data-locked={this.state.locked}
+        onClick={() => onClickHandler(!isLocked, device)}
+        data-locked={isLocked}
       >
         <img
           className="padlock"
-          src={this.state.locked ? lockOpen : lockClosed}
-          alt="image of a padlock"
+          src={isLocked ? lockClosed : lockOpen}
+          alt="padlock"
         />
       </div>
     );
