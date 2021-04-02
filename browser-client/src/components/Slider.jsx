@@ -2,30 +2,23 @@ import React, { Component } from "react";
 import "./Slider.css";
 
 class Slider extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: 10,
-    };
-  }
-
-  handleOnchange = () => {
-    const slider = document.getElementById("sldr");
-    const val = slider.value;
-    console.log(val);
-    this.setState({ value: val });
-  };
   render() {
+    const { value, device, onChangeHandler } = this.props;
     return (
-      <div className="slidecontainer">
+      <div className="sliderContainer">
         <input
           type="range"
           min="0"
           max="100"
           className="slider"
-          value={this.state.value}
-          onChange={() => this.handleOnchange()}
-          id="sldr"
+          id={device.id}
+          value={value}
+          onChange={() => {
+            const slider = document.getElementById(device.id);
+            const newValue = slider.value;
+            console.log(newValue);
+            onChangeHandler(newValue, device);
+          }}
         />
       </div>
     );
