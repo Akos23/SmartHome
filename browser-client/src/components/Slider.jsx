@@ -3,13 +3,13 @@ import "./Slider.css";
 
 class Slider extends Component {
   render() {
-    const { value, device, onChangeHandler } = this.props;
+    const { value, min, max, device, onChangeHandler } = this.props;
     return (
       <div className="sliderContainer">
         <input
           type="range"
-          min="0"
-          max="100"
+          min={min}
+          max={max}
           className="slider"
           id={device.id}
           value={value}
@@ -17,7 +17,7 @@ class Slider extends Component {
             const slider = document.getElementById(device.id);
             const newValue = slider.value;
             console.log(newValue);
-            onChangeHandler(newValue, device);
+            onChangeHandler(device, newValue);
           }}
         />
       </div>
@@ -25,4 +25,8 @@ class Slider extends Component {
   }
 }
 
+Slider.defaultProps = {
+  min: 0,
+  max: 100,
+};
 export default Slider;
