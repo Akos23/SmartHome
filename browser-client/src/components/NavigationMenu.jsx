@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Route, Link } from "react-router-dom";
 import Card from "./Card";
 import "./NavigationMenu.css";
-import Switch from "./Switch";
 
 class NavigationMenu extends Component {
   constructor(props) {
