@@ -4,7 +4,7 @@ import "./StepperButton.css";
 class StepperButton extends Component {
   render() {
     const { value, unit, step, min, max, device, onClickHandler } = this.props;
-    const putCloseOpenButtons = min != undefined && max != undefined;
+    const putCloseOpenButtons = min !== undefined && max !== undefined;
     return (
       <div className="stepperContainer" data-minmax={putCloseOpenButtons}>
         {/*Close button (<<)*/}
