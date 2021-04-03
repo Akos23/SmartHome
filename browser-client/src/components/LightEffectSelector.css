@@ -1,0 +1,50 @@
+.rgbEffectContainer {
+  grid-area: effects;
+  position: absolute;
+  display: grid;
+  width: 70%;
+  height: 80%;
+  border-color: rgb(45, 78, 119);
+  border-width: 1px;
+  border-radius: 15px;
+  border-style: solid;
+  box-shadow: 0 0 25px 10px rgba(0, 0, 0, 0.514);
+  grid-template-columns: 1fr;
+  grid-template-rows: 2fr 1fr 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+  grid-template-areas:
+    "enable"
+    "eff1"
+    "eff2"
+    "eff3"
+    ".";
+}
+
+.rgbEffectContainer[data-activate="true"] {
+  border-color: rgb(111, 171, 245);
+}
+
+.rgbEffectCheckbox {
+  grid-area: enable;
+  position: absolute;
+  left: 20px;
+}
+
+.rgbEffectRadio1 {
+  grid-area: eff1;
+  position: absolute;
+  left: 60px;
+}
+
+.rgbEffectRadio2 {
+  grid-area: eff2;
+  position: absolute;
+  left: 60px;
+}
+
+.rgbEffectRadio3 {
+  grid-area: eff3;
+  position: absolute;
+  left: 60px;
+}

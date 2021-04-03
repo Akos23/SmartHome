@@ -61,6 +61,7 @@ class NavigationMenu extends Component {
               value: 0,
             },
           ],
+          effect: { effectID: 0, isActive: false },
         },
         {
           title: "History",
@@ -151,6 +152,41 @@ class NavigationMenu extends Component {
     this.setState({ cards });
   };
 
+  handleEffectCheckbox = (card, newValue) => {
+    //Copy the cards array
+    const cards = [...this.state.cards];
+
+    //Copy the card that raised the event
+    const index = cards.indexOf(card);
+    cards[index] = { ...this.state.cards[index] };
+
+    //Copy the effect of this card
+    cards[index].effect = { ...this.state.cards[index].effect };
+
+    //Set the new value for this device
+    cards[index].effect.isActive = newValue;
+    cards[index].effect.effectID = 0;
+
+    this.setState({ cards });
+  };
+
+  handleEffectSelection = (card, newValue) => {
+    //Copy the cards array
+    const cards = [...this.state.cards];
+
+    //Copy the card that raised the event
+    const index = cards.indexOf(card);
+    cards[index] = { ...this.state.cards[index] };
+
+    //Copy the effect of this card
+    cards[index].effect = { ...this.state.cards[index].effect };
+
+    //Set the new value for this device
+    cards[index].effect.effectID = newValue;
+
+    this.setState({ cards });
+  };
+
   render() {
     return (
       <div className="navMenuContainer">
@@ -171,6 +207,8 @@ class NavigationMenu extends Component {
                     onSliderHandler={this.handleSlider}
                     onLockButtonHandler={this.handleLockButton}
                     onStepperHandler={this.handleStepper}
+                    onEffectCheckboxHandler={this.handleEffectCheckbox}
+                    onSelectEffectHandler={this.handleEffectSelection}
                   />
                 )}
               />

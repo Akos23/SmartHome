@@ -9,6 +9,7 @@ import partialCloud from "./icons/wheather/day_partial_cloud.svg";
 import cloudy from "./icons/wheather/cloudy.svg";
 import rainy from "./icons/wheather/day_rain.svg";
 import HistorViewer from "./HistoryViewer";
+import LightEffectSelector from "./LightEffectSelector";
 
 class Card extends Component {
   renderControls = (dev) => {
@@ -106,7 +107,7 @@ class Card extends Component {
 
   renderBody = () => {
     let cardBody;
-    const { card, onSliderHandler } = this.props;
+    const { card, onEffectCheckboxHandler, onSelectEffectHandler } = this.props;
     switch (card.type) {
       case "wheather":
         const { degrees, humidity, brightness, rain, wind } = card.measurments;
@@ -147,24 +148,15 @@ class Card extends Component {
                 </React.Fragment>
               ))}
             </div>
-            <div className="rgbEffectContainer">
-              <label className="rgbEffectCheckbox">
-                <input type="checkbox" name="checkbox" value="value" />
-                {"  activate lighting effect"}
-              </label>
-              <label className="rgbEffectRadio1">
-                <input type="radio" name="rgbEffect" value="value" />
-                {"  effect1"}
-              </label>
-              <label className="rgbEffectRadio2">
-                <input type="radio" name="rgbEffect" value="value" />
-                {"  effect2"}
-              </label>
-              <label className="rgbEffectRadio3">
-                <input type="radio" name="rgbEffect" value="value" />
-                {"  effect3"}
-              </label>
-            </div>
+            <LightEffectSelector
+              effect={card.effect}
+              onCheckHandler={(newValue) =>
+                onEffectCheckboxHandler(card, newValue)
+              }
+              onSelectHandler={(newEffectID) =>
+                onSelectEffectHandler(card, newEffectID)
+              }
+            />
           </React.Fragment>
         );
         break;
