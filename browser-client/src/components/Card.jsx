@@ -8,6 +8,7 @@ import clearSunny from "./icons/wheather/day_clear.svg";
 import partialCloud from "./icons/wheather/day_partial_cloud.svg";
 import cloudy from "./icons/wheather/cloudy.svg";
 import rainy from "./icons/wheather/day_rain.svg";
+import HistorViewer from "./HistoryViewer";
 
 class Card extends Component {
   renderControls = (dev) => {
@@ -168,34 +169,7 @@ class Card extends Component {
         );
         break;
       case "history":
-        cardBody = (
-          <React.Fragment>
-            <select className="customSelect">
-              <option value="0">int the last hour</option>
-              <option value="1">in the last day</option>
-              <option value="2">in the last 2 days</option>
-              <option value="3">in the last week</option>
-              <option value="4">in the last 2 weeks</option>
-            </select>
-
-            <div className="logMsgContainer">
-              <hr className="logMsgDecorlineTop" />
-              <div className="messages">
-                {card.logs.map((message) => (
-                  <div className="messageBox">
-                    <div>
-                      <div>time: {message.time}</div>
-                      <div>user: {message.name}</div>
-                      <div>action: {message.action}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <hr className="logMsgDecorlineBottom" />
-            </div>
-          </React.Fragment>
-        );
+        cardBody = <HistorViewer />;
         break;
       default:
         cardBody = <div>undefined card</div>;

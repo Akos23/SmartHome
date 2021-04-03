@@ -65,44 +65,6 @@ class NavigationMenu extends Component {
         {
           title: "History",
           type: "history",
-          logs: [
-            {
-              time: "01/04/2021 08:55",
-              name: "Dabasi Akos",
-              action: "opened front door",
-            },
-            {
-              time: "01/04/2021 08:55",
-              name: "Dabasi Akos",
-              action: "turned off the alarm",
-            },
-            {
-              time: "01/04/2021 09:55",
-              name: "Dabasi Akos",
-              action: "closed front door",
-            },
-            {
-              time: "01/04/2021 09:55",
-              name: "Dabasi Akos",
-              action: "set alarm",
-            },
-            {
-              time: "01/04/2021 10:55",
-              name: "Unknown",
-              action: "tried to open front door",
-            },
-            { time: "01/04/2021 11:55", name: " - ", action: "alarm went off" },
-            {
-              time: "01/04/2021 12:00",
-              name: "Dabasi Akos",
-              action: "turned off alarm",
-            },
-            {
-              time: "01/04/2021 13:55",
-              name: "Dabasi Akos",
-              action: "opened front door",
-            },
-          ],
         },
         {
           title: "Wheather",
@@ -123,9 +85,16 @@ class NavigationMenu extends Component {
               id: 0,
               name: "room temperature",
               type: "indicator",
-              value: "23°C",
+              value: 20,
+              unit: "°C",
             },
-            { id: 1, name: "set temperature", type: "temp-stepper" },
+            {
+              id: 1,
+              name: "set temperature",
+              type: "temp-stepper",
+              value: 23,
+              unit: "°C",
+            },
             { id: 2, name: "power saving mode", type: "switch", isOn: false },
             { id: 3, name: "main power", type: "switch", isOn: true },
             { id: 4, name: "alarm", type: "switch", isOn: false },
