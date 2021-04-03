@@ -27,7 +27,7 @@ class LightEffectSelector extends Component {
                 type="radio"
                 name="rgbEffect"
                 value="value"
-                checked={effect.effectID === 1}
+                defaultChecked={effect.effectID === 1}
                 onClick={() => onSelectHandler(1)}
               />
               {"  effect1"}
@@ -37,7 +37,7 @@ class LightEffectSelector extends Component {
                 type="radio"
                 name="rgbEffect"
                 value="value"
-                checked={effect.effectID === 2}
+                defaultChecked={effect.effectID === 2}
                 onClick={() => onSelectHandler(2)}
               />
               {"  effect2"}
@@ -47,7 +47,7 @@ class LightEffectSelector extends Component {
                 type="radio"
                 name="rgbEffect"
                 value="value"
-                checked={effect.effectID === 3}
+                defaultChecked={effect.effectID === 3}
                 onClick={() => onSelectHandler(3)}
               />
               {"  effect3"}
