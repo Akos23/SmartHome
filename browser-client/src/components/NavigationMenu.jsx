@@ -1,12 +1,14 @@
 import React, { Component } from "react";
 import { Route, Link } from "react-router-dom";
 import Card from "./Card";
+import mqtt from "mqtt";
 import "./NavigationMenu.css";
 
 class NavigationMenu extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      client: mqtt.connect("mqtt://192.168.1.5:8888"),
       cards: [
         {
           title: "Living room",
@@ -107,6 +109,21 @@ class NavigationMenu extends Component {
         isOn: true,
       },
     };
+
+    this.state.client.on("connect", () => this.onConnect());
+    this.state.client.on("message", (topic, payload, packet) =>
+      this.onMessage(topic, payload, packet)
+    );
+  }
+
+  onConnect() {
+    //iratkozzunk fel az összes led topic -ra
+    this.state.client.subscribe("update/test");
+    console.log("connected to broker");
+  }
+
+  onMessage(topic, payload, packet) {
+    console.log("message arrived: topic: " + topic + " mess.:" + payload);
   }
 
   handleChange = (card, device, propName, newValue) => {
@@ -128,6 +145,8 @@ class NavigationMenu extends Component {
 
     //Set the new value for this device
     cards[index].devices[devIndex][propName] = newValue;
+
+    this.state.client.publish("update/test", "damn, it works!");
 
     return cards;
   };
