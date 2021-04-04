@@ -1,9 +1,8 @@
 #include <_wifi.h>
 #include <fstream>
+#include "../wifi_credentials.h"
 
 WiFiClient wifiClient;
-const char *ssid = "";
-const char *password = "";
 
 void setup_wifi()
 {

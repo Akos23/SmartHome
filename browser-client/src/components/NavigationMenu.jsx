@@ -376,32 +376,32 @@ class NavigationMenu extends Component {
   };
 
   handleSwitch = (card, device, newValue) => {
-    const topic = `update/${card.title}/${device.type}/${device.devId}/isOn`;
+    const topic = `control/${card.title}/${device.type}/${device.devId}/isOn`;
     this.state.client.publish(topic, newValue.toString());
   };
 
   handleSlider = (card, device, newValue) => {
-    const topic = `update/${card.title}/${device.type}/${device.devId}/value`;
+    const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
     this.state.client.publish(topic, newValue.toString());
   };
 
   handleLockButton = (card, device, newValue) => {
-    const topic = `update/${card.title}/${device.type}/${device.devId}/isLocked`;
+    const topic = `control/${card.title}/${device.type}/${device.devId}/isLocked`;
     this.state.client.publish(topic, newValue.toString());
   };
 
   handleStepper = (card, device, newValue) => {
-    const topic = `update/${card.title}/${device.type}/${device.devId}/value`;
+    const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
     this.state.client.publish(topic, newValue.toString());
   };
 
   handleEffectCheckbox = (card, newValue) => {
-    const topic = `update/${card.title}/effect-selector/0/isActive`;
+    const topic = `control/${card.title}/effect-selector/0/isActive`;
     this.state.client.publish(topic, newValue.toString());
   };
 
   handleEffectSelection = (card, newValue) => {
-    const topic = `update/${card.title}/effect-selector/0/effectID`;
+    const topic = `control/${card.title}/effect-selector/0/effectID`;
     this.state.client.publish(topic, newValue.toString());
   };
 
