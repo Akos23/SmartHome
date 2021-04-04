@@ -100,6 +100,9 @@ class Card extends Component {
       case "temp-sensor":
         component = <label>{dev.value + dev.unit}</label>;
         break;
+      case "effect-selector":
+        component = "";
+        break;
       default:
         component = <div>default</div>;
     }
@@ -150,7 +153,9 @@ class Card extends Component {
               ))}
             </div>
             <LightEffectSelector
-              effect={card.effect}
+              effectSelector={card.devices.find(
+                (dev) => dev.type === "effect-selector"
+              )}
               onCheckHandler={(newValue) =>
                 onEffectCheckboxHandler(card, newValue)
               }

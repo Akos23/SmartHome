@@ -206,6 +206,7 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
+              devId: 0,
               name: "redLed",
               letter: "R",
               type: "rgb-led",
@@ -213,6 +214,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 1,
+              devId: 1,
               name: "greenLed",
               letter: "G",
               type: "rgb-led",
@@ -220,13 +222,22 @@ class NavigationMenu extends Component {
             },
             {
               id: 2,
+              devId: 2,
               name: "blueLed",
               letter: "B",
               type: "rgb-led",
               value: 0,
             },
+            {
+              id: 3,
+              devId: 0,
+              name: "light effect",
+              type: "effect-selector",
+              effectID: 0,
+              isActive: false,
+            },
           ],
-          effect: { effectID: 0, isActive: false },
+          //effect: { effectID: 0, isActive: false },
         },
         {
           title: "History",
@@ -322,9 +333,11 @@ class NavigationMenu extends Component {
     switch (propName) {
       case "isOn":
       case "isLocked":
+      case "isActive":
         newValue = message === "true" ? true : false;
         break;
       case "value":
+      case "effectID":
         newValue = parseInt(message);
         break;
       default:
@@ -356,6 +369,8 @@ class NavigationMenu extends Component {
     console.log(cards[index].devices[devIndex]);
     //Set the new value for this device
     cards[index].devices[devIndex][propName] = newValue;
+    console.log(this.state.cards[index].devices[devIndex]);
+    console.log(cards[index]);
 
     this.setState({ cards });
   };
@@ -381,24 +396,16 @@ class NavigationMenu extends Component {
   };
 
   handleEffectCheckbox = (card, newValue) => {
-    //Copy the cards array
-    const cards = [...this.state.cards];
-
-    //Copy the card that raised the event
-    const index = cards.indexOf(card);
-    cards[index] = { ...this.state.cards[index] };
-
-    //Copy the effect of this card
-    cards[index].effect = { ...this.state.cards[index].effect };
-
-    //Set the new value for this device
-    cards[index].effect.isActive = newValue;
-    cards[index].effect.effectID = 0;
-
-    this.setState({ cards });
+    const topic = `update/${card.title}/effect-selector/0/isActive`;
+    this.state.client.publish(topic, newValue.toString());
   };
 
   handleEffectSelection = (card, newValue) => {
+    const topic = `update/${card.title}/effect-selector/0/effectID`;
+    this.state.client.publish(topic, newValue.toString());
+  };
+
+  handleEffectUpdate = (card, propName, newValue) => {
     //Copy the cards array
     const cards = [...this.state.cards];
 
@@ -410,7 +417,12 @@ class NavigationMenu extends Component {
     cards[index].effect = { ...this.state.cards[index].effect };
 
     //Set the new value for this device
-    cards[index].effect.effectID = newValue;
+    if (propName === "effectID") {
+      cards[index].effect.effectID = newValue;
+    } else {
+      cards[index].effect.isActive = newValue;
+      cards[index].effect.effectID = 0;
+    }
 
     this.setState({ cards });
   };
