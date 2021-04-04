@@ -1,7 +1,8 @@
 #include <Arduino.h>
+#include <_wifi.h>
 
 void setup() {
-  // put your setup code here, to run once: 
+  setup_wifi();
 }
 
 void loop() {
