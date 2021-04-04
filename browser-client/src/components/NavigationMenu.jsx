@@ -7,6 +7,15 @@ import "./NavigationMenu.css";
 class NavigationMenu extends Component {
   constructor(props) {
     super(props);
+    let lampID = 0;
+    let servoID = 0;
+    let dimmerID = 0;
+    let stepperID = 0;
+    let switchID = 0;
+    let tempSensorID = 0;
+    let tempSetterID = 0;
+    let lockID = 0;
+
     this.state = {
       client: mqtt.connect("mqtt://192.168.1.5:8888"),
       cards: [
@@ -14,14 +23,41 @@ class NavigationMenu extends Component {
           title: "Living room",
           type: "room",
           devices: [
-            { id: 0, name: "standing lamp", type: "lamp", isOn: true },
-            { id: 1, name: "ceiling lights", type: "lamp", isOn: false },
-            { id: 2, name: "dimmer lights", type: "slider", value: 0 },
-            { id: 3, name: "door", type: "lock", isLocked: false },
+            {
+              id: 0,
+              devId: lampID++,
+              name: "standing lamp",
+              type: "lamp",
+              isOn: true,
+            },
+            {
+              id: 1,
+              devId: switchID++,
+              name: "TV",
+              type: "switch",
+              isOn: false,
+            },
+            {
+              id: 2,
+              devId: tempSensorID++,
+              name: "temperature",
+              type: "temp-sensor",
+              value: 23,
+              unit: "°C",
+            },
+            {
+              id: 3,
+              devId: tempSetterID++,
+              name: "set temperature",
+              type: "temp-setter",
+              value: 23,
+              unit: "°C",
+            },
             {
               id: 4,
+              devId: servoID++,
               name: "window",
-              type: "window-stepper",
+              type: "servo",
               value: 0,
               unit: "°",
             },
@@ -30,13 +66,140 @@ class NavigationMenu extends Component {
         {
           title: "Main bedroom",
           type: "room",
-          devices: [{ id: 0, name: "wall lamp", type: "lamp", isOn: false }],
+          devices: [
+            {
+              id: 0,
+              devId: dimmerID++,
+              name: "dimmer lights",
+              type: "dimmer",
+              value: 0,
+            },
+            {
+              id: 1,
+              devId: switchID++,
+              name: "TV",
+              type: "switch",
+              isOn: false,
+            },
+            {
+              id: 2,
+              devId: stepperID++,
+              name: "shutter",
+              type: "stepper",
+              value: 0,
+              unit: "%",
+            },
+          ],
         },
-        { title: "Guest bedroom", type: "room", devices: [] },
-        { title: "Kitchen", type: "room", devices: [] },
-        { title: "Hall", type: "room", devices: [] },
-        { title: "Garage", type: "room", devices: [] },
-        { title: "Bathroom", type: "room", devices: [] },
+        {
+          title: "Guest bedroom",
+          type: "room",
+          devices: [
+            {
+              id: 0,
+              devId: dimmerID++,
+              name: "dimmer lights",
+              type: "dimmer",
+              value: 0,
+            },
+            {
+              id: 1,
+              devId: switchID++,
+              name: "TV",
+              type: "switch",
+              isOn: false,
+            },
+            {
+              id: 2,
+              devId: stepperID++,
+              name: "shutter",
+              type: "stepper",
+              value: 0,
+              unit: "%",
+            },
+          ],
+        },
+        {
+          title: "Kitchen",
+          type: "room",
+          devices: [
+            {
+              id: 0,
+              devId: lampID++,
+              name: "under cabinet lights",
+              type: "lamp",
+              isOn: false,
+            },
+            {
+              id: 1,
+              devId: lampID++,
+              name: "kitchen island lights",
+              type: "lamp",
+              isOn: false,
+            },
+            {
+              id: 2,
+              devId: switchID++,
+              name: "extractor fan",
+              type: "switch",
+              isOn: false,
+            },
+          ],
+        },
+        {
+          title: "Hall",
+          type: "room",
+          devices: [
+            {
+              id: 0,
+              devId: lampID++,
+              name: "lights",
+              type: "lamp",
+              isOn: false,
+            },
+            {
+              id: 1,
+              devId: lockID++,
+              name: "front door",
+              type: "lock",
+              isLocked: false,
+            },
+          ],
+        },
+        {
+          title: "Garage",
+          type: "room",
+          devices: [
+            {
+              id: 0,
+              devId: lampID++,
+              name: "lights",
+              type: "lamp",
+              isOn: false,
+            },
+            {
+              id: 1,
+              devId: stepperID++,
+              name: "garage door",
+              type: "stepper",
+              value: 0,
+              unit: "%",
+            },
+          ],
+        },
+        {
+          title: "Bathroom",
+          type: "room",
+          devices: [
+            {
+              id: 0,
+              devId: lampID++,
+              name: "lights",
+              type: "lamp",
+              isOn: false,
+            },
+          ],
+        },
         {
           title: "Mood lighting",
           type: "rgb",
@@ -45,21 +208,21 @@ class NavigationMenu extends Component {
               id: 0,
               name: "redLed",
               letter: "R",
-              type: "rgb-slider",
+              type: "rgb-led",
               value: 0,
             },
             {
               id: 1,
               name: "greenLed",
               letter: "G",
-              type: "rgb-slider",
+              type: "rgb-led",
               value: 0,
             },
             {
               id: 2,
               name: "blueLed",
               letter: "B",
-              type: "rgb-slider",
+              type: "rgb-led",
               value: 0,
             },
           ],
@@ -87,20 +250,39 @@ class NavigationMenu extends Component {
             {
               id: 0,
               name: "room temperature",
-              type: "indicator",
+              type: "temp-sensor",
               value: 20,
               unit: "°C",
             },
             {
               id: 1,
+              devId: tempSetterID++,
               name: "set temperature",
-              type: "temp-stepper",
+              type: "temp-setter",
               value: 23,
               unit: "°C",
             },
-            { id: 2, name: "power saving mode", type: "switch", isOn: false },
-            { id: 3, name: "main power", type: "switch", isOn: true },
-            { id: 4, name: "alarm", type: "switch", isOn: false },
+            {
+              id: 2,
+              devId: switchID++,
+              name: "power saving mode",
+              type: "switch",
+              isOn: false,
+            },
+            {
+              id: 3,
+              devId: switchID++,
+              name: "main power",
+              type: "switch",
+              isOn: true,
+            },
+            {
+              id: 4,
+              devId: switchID++,
+              name: "alarm",
+              type: "switch",
+              isOn: false,
+            },
           ],
         },
       ],
@@ -109,7 +291,9 @@ class NavigationMenu extends Component {
         isOn: true,
       },
     };
+  }
 
+  componentDidMount() {
     this.state.client.on("connect", () => this.onConnect());
     this.state.client.on("message", (topic, payload, packet) =>
       this.onMessage(topic, payload, packet)
@@ -117,8 +301,8 @@ class NavigationMenu extends Component {
   }
 
   onConnect() {
-    //iratkozzunk fel az összes led topic -ra
-    this.state.client.subscribe("update/test");
+    //Lets subscribe to the topics we are intrested in
+    this.state.client.subscribe("update/test/#");
     console.log("connected to broker");
   }
 
@@ -145,8 +329,11 @@ class NavigationMenu extends Component {
 
     //Set the new value for this device
     cards[index].devices[devIndex][propName] = newValue;
-
-    this.state.client.publish("update/test", "damn, it works!");
+    const dev = cards[index].devices[devIndex];
+    const topic =
+      "update/test/" + cards[index].title + "/" + dev.type + "/" + dev.devId;
+    this.state.client.publish(topic, "damn, it works!");
+    console.log("message sent: " + card.title + "/" + dev.name);
 
     return cards;
   };

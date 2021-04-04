@@ -33,7 +33,7 @@ class Card extends Component {
           />
         );
         break;
-      case "slider":
+      case "dimmer":
         component = (
           <Slider
             value={dev.value}
@@ -44,7 +44,7 @@ class Card extends Component {
           />
         );
         break;
-      case "rgb-slider":
+      case "rgb-led":
         component = (
           <Slider
             value={dev.value}
@@ -68,7 +68,8 @@ class Card extends Component {
           />
         );
         break;
-      case "window-stepper":
+      case "servo":
+      case "stepper":
         component = (
           <StepperButton
             value={dev.value}
@@ -83,7 +84,7 @@ class Card extends Component {
           />
         );
         break;
-      case "temp-stepper":
+      case "temp-setter":
         component = (
           <StepperButton
             value={dev.value}
@@ -96,7 +97,7 @@ class Card extends Component {
           />
         );
         break;
-      case "indicator":
+      case "temp-sensor":
         component = <label>{dev.value + dev.unit}</label>;
         break;
       default:
