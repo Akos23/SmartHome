@@ -302,12 +302,39 @@ class NavigationMenu extends Component {
 
   onConnect() {
     //Lets subscribe to the topics we are intrested in
-    this.state.client.subscribe("update/test/#");
+    this.state.client.subscribe("update/#");
     console.log("connected to broker");
   }
 
   onMessage(topic, payload, packet) {
     console.log("message arrived: topic: " + topic + " mess.:" + payload);
+
+    //split topic into subtopics
+    const subtopics = topic.toString().split("/");
+    const card = this.state.cards.find((card) => card.title === subtopics[1]);
+    const device = card.devices.find(
+      (device) =>
+        device.type === subtopics[2] && device.devId === parseInt(subtopics[3])
+    );
+    const propName = subtopics[4];
+    const message = payload.toString();
+    let newValue;
+    switch (propName) {
+      case "isOn":
+      case "isLocked":
+        newValue = message === "true" ? true : false;
+        break;
+      case "value":
+        newValue = parseInt(message);
+        break;
+      default:
+        newValue = "default";
+    }
+    console.log(
+      `card: ${card} device: ${device} propName:${propName} newValue: ${newValue}`
+    );
+
+    this.handleChange(card, device, propName, newValue);
   }
 
   handleChange = (card, device, propName, newValue) => {
@@ -326,36 +353,31 @@ class NavigationMenu extends Component {
     cards[index].devices[devIndex] = {
       ...this.state.cards[index].devices[devIndex],
     };
-
+    console.log(cards[index].devices[devIndex]);
     //Set the new value for this device
     cards[index].devices[devIndex][propName] = newValue;
-    const dev = cards[index].devices[devIndex];
-    const topic =
-      "update/test/" + cards[index].title + "/" + dev.type + "/" + dev.devId;
-    this.state.client.publish(topic, "damn, it works!");
-    console.log("message sent: " + card.title + "/" + dev.name);
 
-    return cards;
+    this.setState({ cards });
   };
 
   handleSwitch = (card, device, newValue) => {
-    const cards = this.handleChange(card, device, "isOn", newValue);
-    this.setState({ cards });
+    const topic = `update/${card.title}/${device.type}/${device.devId}/isOn`;
+    this.state.client.publish(topic, newValue.toString());
   };
 
   handleSlider = (card, device, newValue) => {
-    const cards = this.handleChange(card, device, "value", newValue);
-    this.setState({ cards });
+    const topic = `update/${card.title}/${device.type}/${device.devId}/value`;
+    this.state.client.publish(topic, newValue.toString());
   };
 
   handleLockButton = (card, device, newValue) => {
-    const cards = this.handleChange(card, device, "isLocked", newValue);
-    this.setState({ cards });
+    const topic = `update/${card.title}/${device.type}/${device.devId}/isLocked`;
+    this.state.client.publish(topic, newValue.toString());
   };
 
   handleStepper = (card, device, newValue) => {
-    const cards = this.handleChange(card, device, "value", newValue);
-    this.setState({ cards });
+    const topic = `update/${card.title}/${device.type}/${device.devId}/value`;
+    this.state.client.publish(topic, newValue.toString());
   };
 
   handleEffectCheckbox = (card, newValue) => {

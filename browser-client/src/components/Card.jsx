@@ -76,7 +76,7 @@ class Card extends Component {
             unit={dev.unit}
             step={10}
             min={0}
-            max={120}
+            max={100}
             device={dev}
             onClickHandler={(device, newValue) =>
               onStepperHandler(card, device, newValue)
