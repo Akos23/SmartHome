@@ -1,0 +1,14 @@
+{
+  "folders": [
+	{
+		"path": "esp-client"
+	},
+	{
+		"path": "browser-client"
+	},
+	{
+		"path": "broker"
+	}
+],
+  "settings": {}
+}
