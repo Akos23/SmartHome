@@ -41,10 +41,32 @@ void onMessage(String topic, byte *payload, unsigned int length)
 
   //split the topic into subtopics
   std::vector<String> topics = getSubTopics(topic);
+  const String card = topics[1];
+  const String devType = topics[2];
+  const uint devId = topics[3].toInt();
+  const String porpName = topics[4];
+
 
   //Here we will control some device and if everything was fine
   //then we publish a message to the broker for the browser-clients 
   //so that they can update their states --> UI
+
+  //Test: controlling the standing lamp in the living room
+  if(devType =="lamp" && devId == 0)
+  {
+    bool switchOn = message == "true" ;
+    digitalWrite(D4, !switchOn); // active low
+  }
+
+  //Test: controlling the standing lamp in the living room
+  if(devType =="dimmer" && devId == 0)
+  {
+    uint value = message.toInt(); // 0-100
+    uint mapped_value = map(value, 0, 100, 0, 1023);
+    analogWrite(D2, mapped_value);
+  }
+
+  //////////////////////////////////////////
 
   topic.replace("control", "update");
 

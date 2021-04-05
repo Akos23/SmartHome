@@ -6,6 +6,9 @@ extern PubSubClient mqttClient;
 
 void setup() {
   setup_wifi();
+  pinMode(D4, OUTPUT); // standing lamp in the Living room
+  pinMode(D2, OUTPUT); // dimmer lights in Main bedroom
+  analogWriteRange(1023);
 }
 
 void loop() {
