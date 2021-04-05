@@ -25,7 +25,7 @@ class LoginForm extends Component {
             placeholder="username"
           />
           <input id="password" type="text" placeholder="password" />
-          <button className="loginButton">Can I come in?</button>
+          <button className="loginButton">May I come in?</button>
         </div>
       </form>
     );
