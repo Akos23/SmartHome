@@ -28,7 +28,7 @@ class NavigationMenu extends Component {
               devId: lampID++,
               name: "standing lamp",
               type: "lamp",
-              isOn: true,
+              isOn: false,
             },
             {
               id: 1,
@@ -299,7 +299,7 @@ class NavigationMenu extends Component {
       ],
       overview: {
         title: "Overview",
-        isOn: true,
+        isOn: false,
       },
     };
   }
