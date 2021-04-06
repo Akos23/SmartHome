@@ -384,7 +384,7 @@ class NavigationMenu extends Component {
 
   handleSlider = (card, device, newValue) => {
     const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
-    this.state.client.publish(topic, newValue.toString());
+    this.state.client.publish(topic, newValue.toString(), { retain: true });
   };
 
   handleLockButton = (card, device, newValue) => {
