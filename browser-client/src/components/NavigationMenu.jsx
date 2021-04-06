@@ -312,8 +312,10 @@ class NavigationMenu extends Component {
   }
 
   onConnect() {
-    //Lets subscribe to the topics we are intrested in
+    // Lets subscribe to the topics we are intrested in
     this.state.client.subscribe("update/#");
+    this.state.client.subscribe("control/+/rgb-led/#");
+    this.state.client.subscribe("control/+/dimmer/#");
     console.log("connected to broker");
   }
 

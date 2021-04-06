@@ -70,8 +70,14 @@ void onMessage(String topic, byte *payload, unsigned int length)
 
   topic.replace("control", "update");
 
-  bool retain = true; //broker will store the last message so when a new brower-client connect it will get this message and will know the current state
-  mqttClient.publish(topic.c_str(), message.c_str(), retain);
+  //These 2 types of devices get too many messages in a short period of time
+  //So if the browser waited for conformation from the device to update their
+  //UI then we wouldn't get a smooth experience
+  if(!(devType=="rgb-led"||devType=="dimmer"))
+  {
+    bool retain = true; //broker will store the last message so when a new brower-client connect it will get this message and will know the current state
+    mqttClient.publish(topic.c_str(), message.c_str(), retain);
+  }
 }
 
 std::vector<String> getSubTopics(String topic)
