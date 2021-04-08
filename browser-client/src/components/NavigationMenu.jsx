@@ -350,9 +350,6 @@ class NavigationMenu extends Component {
       default:
         newValue = "default";
     }
-    console.log(
-      `card: ${card} device: ${device} propName:${propName} newValue: ${newValue}`
-    );
 
     this.handleChange(card, device, propName, newValue);
   }
@@ -373,11 +370,8 @@ class NavigationMenu extends Component {
     cards[index].devices[devIndex] = {
       ...this.state.cards[index].devices[devIndex],
     };
-    console.log(cards[index].devices[devIndex]);
     //Set the new value for this device
     cards[index].devices[devIndex][propName] = newValue;
-    console.log(this.state.cards[index].devices[devIndex]);
-    console.log(cards[index]);
 
     this.setState({ cards });
   };
