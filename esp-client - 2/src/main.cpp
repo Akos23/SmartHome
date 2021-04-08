@@ -4,6 +4,8 @@
 #include "_mqtt.h"
 #include "_mcp23017.h"
 #include "_alarm.h"
+#include "Servo.h"
+
 
 /*
   LR: living room
@@ -20,6 +22,10 @@ extern PubSubClient mqttClient;
 //Connect the alarm to ESP
 const uint8 alarm = D2;
 
+//Connect window controllers to ESP
+const uint8 LR_window = D5;
+Servo LR_servo;
+
 const int8 switches[] = 
 {
   -1,
@@ -31,9 +37,16 @@ const int8 switches[] =
   alarm   //alarm --> logical switch
 };
 
+const uint8 windows[] = 
+{
+  LR_window
+};
+
 void setup() {
   //Connect to local network
   setup_wifi();
+
+  LR_servo.attach(LR_window);
 }
 
 bool isAlarmOn = false;
@@ -93,7 +106,13 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "servo")
   {
-    //TODO...
+    uint newValue = message.toInt();
+    const int8 physicalPin = windows[devId];
+    if(physicalPin == LR_window)
+    {
+      uint setPoint = map(newValue,0,100,0,180);
+      LR_servo.write(setPoint);
+    }
   }
   else if(devType == "stepper")
   {
