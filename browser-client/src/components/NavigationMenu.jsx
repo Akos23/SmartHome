@@ -17,7 +17,7 @@ class NavigationMenu extends Component {
     let lockID = 0;
 
     this.state = {
-      client: mqtt.connect("mqtt://192.168.1.5:8888"),
+      client: mqtt.connect("mqtt://192.168.1.7:8888"),
       cards: [
         {
           title: "Living room",
@@ -325,6 +325,11 @@ class NavigationMenu extends Component {
     //split topic into subtopics
     const subtopics = topic.toString().split("/");
     const card = this.state.cards.find((card) => card.title === subtopics[1]);
+
+    if (subtopics[2] === "motion") {
+      return;
+    }
+
     const device = card.devices.find(
       (device) =>
         device.type === subtopics[2] && device.devId === parseInt(subtopics[3])
