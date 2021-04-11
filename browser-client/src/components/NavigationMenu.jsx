@@ -1,12 +1,15 @@
 import React, { Component } from "react";
 import { Route, Link } from "react-router-dom";
 import Card from "./Card";
-import mqtt from "mqtt";
 import "./NavigationMenu.css";
 
 class NavigationMenu extends Component {
   constructor(props) {
     super(props);
+
+    //what are we gonna do here if we are not connected?
+    if (!this.props.client) this.props.history.push("/");
+
     let lampID = 0;
     let servoID = 0;
     let dimmerID = 0;
@@ -17,7 +20,6 @@ class NavigationMenu extends Component {
     let lockID = 0;
 
     this.state = {
-      client: mqtt.connect("mqtt://192.168.1.7:8888"),
       cards: [
         {
           title: "Living room",
@@ -305,18 +307,14 @@ class NavigationMenu extends Component {
   }
 
   componentDidMount() {
-    this.state.client.on("connect", () => this.onConnect());
-    this.state.client.on("message", (topic, payload, packet) =>
-      this.onMessage(topic, payload, packet)
-    );
-  }
-
-  onConnect() {
-    // Lets subscribe to the topics we are intrested in
-    this.state.client.subscribe("update/#");
-    this.state.client.subscribe("control/+/rgb-led/#");
-    this.state.client.subscribe("control/+/dimmer/#");
-    console.log("connected to broker");
+    const { client } = this.props;
+    //Specify the function that will handle incoming messages
+    if (client) {
+      client.on("message", (topic, payload, packet) =>
+        this.onMessage(topic, payload, packet)
+      );
+      client.options.reconnectPeriod = 2000;
+    }
   }
 
   onMessage(topic, payload, packet) {
@@ -325,17 +323,34 @@ class NavigationMenu extends Component {
     //split topic into subtopics
     const subtopics = topic.toString().split("/");
     const card = this.state.cards.find((card) => card.title === subtopics[1]);
-
-    if (subtopics[2] === "motion") {
-      return;
-    }
-
     const device = card.devices.find(
       (device) =>
         device.type === subtopics[2] && device.devId === parseInt(subtopics[3])
     );
     const propName = subtopics[4];
+
     const message = payload.toString();
+
+    //Check if everything has a valid value
+    if (!(device && propName && message && card)) {
+      console.log("invalid topic or message");
+      return;
+    }
+
+    //We wont handle the following topics here:
+    if (subtopics[2] === "motion") {
+      return;
+    }
+
+    if (subtopics[1] === "history") {
+      return;
+    }
+
+    if (subtopics[0] === "debug") {
+      return;
+    }
+
+    //Lets update here what we have to:
     let newValue;
     switch (propName) {
       case "isOn":
@@ -378,32 +393,32 @@ class NavigationMenu extends Component {
 
   handleSwitch = (card, device, newValue) => {
     const topic = `control/${card.title}/${device.type}/${device.devId}/isOn`;
-    this.state.client.publish(topic, newValue.toString());
+    this.props.client.publish(topic, newValue.toString());
   };
 
   handleSlider = (card, device, newValue) => {
     const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
-    this.state.client.publish(topic, newValue.toString(), { retain: true });
+    this.props.client.publish(topic, newValue.toString(), { retain: true });
   };
 
   handleLockButton = (card, device, newValue) => {
     const topic = `control/${card.title}/${device.type}/${device.devId}/isLocked`;
-    this.state.client.publish(topic, newValue.toString());
+    this.props.client.publish(topic, newValue.toString());
   };
 
   handleStepper = (card, device, newValue) => {
     const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
-    this.state.client.publish(topic, newValue.toString());
+    this.props.client.publish(topic, newValue.toString());
   };
 
   handleEffectCheckbox = (card, newValue) => {
     const topic = `control/${card.title}/effect-selector/0/isActive`;
-    this.state.client.publish(topic, newValue.toString());
+    this.props.client.publish(topic, newValue.toString());
   };
 
   handleEffectSelection = (card, newValue) => {
     const topic = `control/${card.title}/effect-selector/0/effectID`;
-    this.state.client.publish(topic, newValue.toString());
+    this.props.client.publish(topic, newValue.toString());
   };
 
   handleEffectUpdate = (card, propName, newValue) => {

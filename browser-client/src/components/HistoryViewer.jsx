@@ -50,7 +50,21 @@ class HistorViewer extends Component {
       timeFrame: 1,
     };
   }
-
+  componentDidMount() {
+    fetch("http://192.168.1.7:3333/history")
+      .then((response) => response.json())
+      .then((data) => {
+        const logs = data.logs.map(({ time, name, action }) => {
+          return {
+            time: new Date(time),
+            name: name,
+            action: action,
+          };
+        });
+        this.setState({ logs });
+        //console.log(logs);
+      });
+  }
   onSelectionChange = () => {
     const newTimeFrame = document.getElementById("historyDropdown").value;
 

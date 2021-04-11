@@ -23,7 +23,7 @@ button {
   outline: none;
 }
 .loginContainer input {
-  background-color: rgb(179, 167, 167);
+  background-color: rgb(171, 167, 179);
   border-width: 1px;
   border-color: greenyellow;
   border-style: solid;
@@ -31,7 +31,7 @@ button {
 }
 
 .loginContainer input:focus {
-  background-color: whitesmoke;
+  background-color: rgb(193, 199, 204);
 }
 
 .loginContainer button {

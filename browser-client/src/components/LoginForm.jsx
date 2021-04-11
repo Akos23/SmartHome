@@ -2,29 +2,35 @@ import React, { Component } from "react";
 import "./LoginForm.css";
 
 class LoginForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
-  handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("onsubmit");
-    this.props.history.push("/home");
-  };
   render() {
+    const { username, password, onChangeHandler, onSubmitHandler } = this.props;
     return (
-      <form className="loginForm" onSubmit={this.handleSubmit}>
+      <form
+        className="loginForm"
+        onSubmit={(e) => onSubmitHandler(e, this.props.history)}
+      >
         <div className="loginContainer">
           <label htmlFor="username" className="login">
             Login
           </label>
           <input
             id="username"
+            name="username"
+            value={username}
+            onChange={(e) => onChangeHandler(e)}
             type="text"
             autoComplete="off"
             placeholder="username"
           />
-          <input id="password" type="text" placeholder="password" />
+          <input
+            id="password"
+            name="password"
+            value={password}
+            onChange={(e) => onChangeHandler(e)}
+            type="password"
+            autoComplete="off"
+            placeholder="password"
+          />
           <button className="loginButton">May I come in?</button>
         </div>
       </form>
