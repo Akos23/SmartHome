@@ -7,13 +7,10 @@
       "path": "broker"
     },
     {
-      "path": "esp-client1"
-    },
-    {
-      "path": "esp-client2"
-    },
-    {
       "path": "esp-client3"
+    },
+    {
+      "path": "logger"
     }
   ],
   "settings": {
