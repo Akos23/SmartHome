@@ -322,6 +322,20 @@ class NavigationMenu extends Component {
 
     //split topic into subtopics
     const subtopics = topic.toString().split("/");
+
+    //We wont handle the following topics here:
+    if (subtopics[2] === "motion") {
+      return;
+    }
+
+    if (subtopics[1] === "history") {
+      return;
+    }
+
+    if (subtopics[0] === "debug") {
+      return;
+    }
+
     const card = this.state.cards.find((card) => card.title === subtopics[1]);
     const device = card.devices.find(
       (device) =>
@@ -334,19 +348,6 @@ class NavigationMenu extends Component {
     //Check if everything has a valid value
     if (!(device && propName && message && card)) {
       console.log("invalid topic or message");
-      return;
-    }
-
-    //We wont handle the following topics here:
-    if (subtopics[2] === "motion") {
-      return;
-    }
-
-    if (subtopics[1] === "history") {
-      return;
-    }
-
-    if (subtopics[0] === "debug") {
       return;
     }
 
