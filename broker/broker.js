@@ -1,19 +1,39 @@
 const aedes = require("aedes")(); //creates an instance: const aedes = aedes()
-const httpServer = require("http").createServer();
 const ws = require("websocket-stream");
 
-//mqtt over websocket
+//mqtt server listening on websocket port
+//It is built on an http server
+const wsServer = require("http").createServer();
+ws.createServer({ server: wsServer }, aedes.handle);
 const ws_port = 8888;
-ws.createServer({ server: httpServer }, aedes.handle);
 
-httpServer.listen(ws_port, function () {
-  console.log("websocket server listening on port ", ws_port);
+wsServer.listen(ws_port, function () {
+  console.log(
+    `websocket server on ${wsServer.address().address} listening on port ${
+      wsServer.address().port
+    }`
+  );
 });
 
-//mqtt
-const server = require("net").createServer(aedes.handle);
-const port = 1883;
+//mqtt server listening on raw TCP port
+const tcpServer = require("net").createServer(aedes.handle);
+const tcp_port = 1883;
 
-server.listen(port, function () {
-  console.log("mqtt server started and listening on port ", port);
+tcpServer.listen(tcp_port, function () {
+  console.log(
+    `TCP server on ${tcpServer.address().address} listening on port ${
+      tcpServer.address().port
+    }`
+  );
 });
+
+//Authentication
+aedes.authenticate = (client, username, password, callback) => {
+  const isAuthorized = String(password) === "19961224";
+  console.log(
+    `${client.id} as ${username} wants to connect: ${
+      isAuthorized ? "accepted" : "denied"
+    } `
+  );
+  callback(null, isAuthorized);
+};
