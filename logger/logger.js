@@ -26,15 +26,21 @@ console.log(database);
 const stream = fs.createWriteStream("database.json", { flags: "a" });
 
 //New log messages will arrive on the update/history topic of our broker
-const client = mqtt.connect("mqtt://192.168.1.19:1883");
-client.on("connect", function () {
-  client.subscribe("update/history", function (err) {
+const client = mqtt.connect("mqtt://192.168.1.19:1883", {
+  username: "logger service",
+  password: "19961224",
+});
+
+client.on("connect", () => {
+  client.subscribe("update/history", (err) => {
     if (!err) {
       client.publish("debug", "logger service connected");
       console.log("connected to broker");
     }
   });
 });
+
+client.on("error", (err) => console.log(err.toString()));
 
 client.on("message", function (topic, message) {
   // message format: name,action
