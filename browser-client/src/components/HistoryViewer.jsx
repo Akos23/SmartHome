@@ -5,52 +5,11 @@ class HistorViewer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      logs: [
-        {
-          time: new Date(2021, 3, 3, 8, 30),
-          name: "Dabasi Akos",
-          action: "opened front door",
-        },
-        {
-          time: new Date(2021, 3, 3, 8, 40),
-          name: "Dabasi Akos",
-          action: "turned off the alarm",
-        },
-        {
-          time: new Date(2021, 3, 2, 12, 21),
-          name: "Dabasi Akos",
-          action: "closed front door",
-        },
-        {
-          time: new Date(2021, 3, 1, 12, 21),
-          name: "Dabasi Akos",
-          action: "set alarm",
-        },
-        {
-          time: new Date(2021, 3, 1, 12, 21),
-          name: "Unknown",
-          action: "tried to open front door",
-        },
-        {
-          time: new Date(2021, 3, 1, 12, 21),
-          name: " - ",
-          action: "alarm went off",
-        },
-        {
-          time: new Date(2021, 1, 4, 12, 21),
-          name: "Dabasi Akos",
-          action: "turned off alarm",
-        },
-        {
-          time: new Date(2021, 1, 4, 12, 21),
-          name: "Dabasi Akos",
-          action: "opened front door",
-        },
-      ],
+      logs: [],
       timeFrame: 1,
     };
   }
-  componentDidMount() {
+  updateLogs = () => {
     fetch("http://192.168.1.7:3333/history")
       .then((response) => response.json())
       .then((data) => {
@@ -62,14 +21,18 @@ class HistorViewer extends Component {
           };
         });
         this.setState({ logs });
-        //console.log(logs);
+        console.log(logs);
       });
+  };
+  componentDidMount() {
+    this.updateLogs();
   }
   onSelectionChange = () => {
     const newTimeFrame = document.getElementById("historyDropdown").value;
 
     this.setState({ timeFrame: newTimeFrame });
-    console.log(newTimeFrame);
+    this.updateLogs();
+    //console.log(newTimeFrame);
   };
 
   render() {
@@ -78,10 +41,10 @@ class HistorViewer extends Component {
     const filteredLogs = logs.filter((log) => {
       const ellapsedMs = now.getTime() - log.time.getTime();
       const ellapsedH = ellapsedMs / 1000 / 60 / 60;
-      console.log(now.toLocaleString("hu-HU"));
-      console.log(log.time.toLocaleString("hu-HU"));
-      console.log(ellapsedH);
-      console.log(timeFrame);
+      //console.log(now.toLocaleString("hu-HU"));
+      //console.log(log.time.toLocaleString("hu-HU"));
+      //console.log(ellapsedH);
+      //console.log(timeFrame);
       return ellapsedH < timeFrame;
     });
 
@@ -102,8 +65,8 @@ class HistorViewer extends Component {
         <div className="logMsgContainer">
           <hr className="logMsgDecorlineTop" />
           <div className="messages">
-            {filteredLogs.map((message) => (
-              <div className="messageBox">
+            {filteredLogs.map((message, index) => (
+              <div className="messageBox" key={index}>
                 <div>
                   <div>{`time: ${message.time.toLocaleString("hu-HU")}`}</div>
                   <div>user: {message.name}</div>
