@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 const mqtt = require("mqtt");
 
 const mqtt_server = "mqtt://192.168.1.19:1883";
-const mqtt_username = "logger service";
+const mqtt_username = "email service";
 const mqtt_password = "19961224";
 const mqtt_topic = "notifications";
 
@@ -26,12 +26,7 @@ const client = mqtt.connect(mqtt_server, {
 });
 
 client.on("connect", () => {
-  client.subscribe(topic, (err) => {
-    if (!err) {
-      client.publish("debug", "logger service connected");
-      console.log("connected to broker");
-    }
-  });
+  client.subscribe(mqtt_topic);
 });
 
 client.on("error", (err) => console.log(err.toString()));
@@ -57,13 +52,5 @@ client.on("message", function (topic, message) {
         console.log("Email sent: " + info.response);
       }
     });
-
-    //construct the new record
-    const record = {
-      name: "A Bad Person",
-      action: "entered your home",
-      time: now.getTime(),
-    };
-    console.log(`new record added: ${record}`);
   }
 });
