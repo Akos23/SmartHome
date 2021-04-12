@@ -37,3 +37,19 @@ aedes.authenticate = (client, username, password, callback) => {
   );
   callback(null, isAuthorized);
 };
+
+aedes.on("clientReady", (client) => {
+  console.log(`${client.id} connected`);
+});
+
+aedes.on("clientDisconnect", (client) => {
+  console.log(`${client.id} disconnected`);
+});
+
+aedes.on("clientError", (client, error) => {
+  console.log(`Error: ${client.id}  says: ${error.toString()}`);
+});
+
+aedes.on("connectionError", (client, error) => {
+  console.log(`connection Error: ${client.id} says: ${error.toString()}`);
+});
