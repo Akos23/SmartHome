@@ -3,7 +3,7 @@ const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 
-const mqtt_server = "mqtt://192.168.1.19:8888";
+const mqtt_server = "mqtt://192.168.1.19:1883";
 const mqtt_topics = [
   "update/Hall/lock/0",
   "update/alarm",
