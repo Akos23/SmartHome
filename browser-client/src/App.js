@@ -65,13 +65,18 @@ class App extends Component {
   };
 
   render() {
+    const { client, account } = this.state;
     return (
       <div className="App">
         <ToastContainer />
         <Route
           path="/home"
           render={(props) => (
-            <NavigationMenu {...props} client={this.state.client} />
+            <NavigationMenu
+              {...props}
+              client={client}
+              username={account.username}
+            />
           )}
         />
         <Route
@@ -80,8 +85,8 @@ class App extends Component {
           render={(props) => (
             <LoginForm
               {...props}
-              username={this.state.account.username}
-              password={this.state.account.password}
+              username={account.username}
+              password={account.password}
               onChangeHandler={this.handleAccountChange}
               onSubmitHandler={this.handleLogin}
             />
