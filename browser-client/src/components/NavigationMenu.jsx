@@ -379,7 +379,10 @@ class NavigationMenu extends Component {
         ? "armed the security system"
         : "disarmed the security system";
       const message = `${this.props.username},${action}`;
-      this.props.client.publish("logger/history", message);
+      this.props.client.publish(
+        /*"logger/history", message*/ "notifications",
+        "intrusion"
+      );
     }
 
     this.handleChange(card, device, propName, newValue);
