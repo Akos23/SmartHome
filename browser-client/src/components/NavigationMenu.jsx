@@ -2,13 +2,14 @@ import React, { Component } from "react";
 import { Route, Link } from "react-router-dom";
 import Card from "./Card";
 import "./NavigationMenu.css";
+import SecurityAlert from "./SecurityAlert";
 
 class NavigationMenu extends Component {
   constructor(props) {
     super(props);
 
     //what are we gonna do here if we are not connected?
-    if (!this.props.client) this.props.history.push("/");
+    //if (!this.props.client) this.props.history.push("/");
 
     let lampID = 0;
     let servoID = 0;
@@ -292,7 +293,7 @@ class NavigationMenu extends Component {
             {
               id: 4,
               devId: switchID++, //6
-              name: "alarm",
+              name: "security system",
               type: "switch",
               isOn: false,
             },
@@ -374,7 +375,7 @@ class NavigationMenu extends Component {
         newValue = "default";
     }
 
-    if (device.name === "alarm") {
+    if (device.name === "security system") {
       const action = newValue
         ? "armed the security system"
         : "disarmed the security system";
@@ -462,6 +463,10 @@ class NavigationMenu extends Component {
     this.setState({ cards });
   };
 
+  handleAlarm = () => {
+    this.props.history.push("/home");
+  };
+
   render() {
     return (
       <div className="navMenuContainer">
@@ -494,9 +499,15 @@ class NavigationMenu extends Component {
           className={"Tile " + this.state.overview.title.replace(/\s+/g, "")}
         >
           <label>{this.state.overview.title}</label>
-          <div className="movementIndicator"></div>
-          <div className="lightsIndicator"></div>
+          {/*<div className="movementIndicator"></div>
+          <div className="lightsIndicator"></div>*/}
         </div>
+        <Route
+          path={"/home/intrusion"}
+          render={(props) => (
+            <SecurityAlert {...props} onButtonHandler={this.handleAlarm} />
+          )}
+        />
       </div>
     );
   }

@@ -1,0 +1,25 @@
+.alert {
+  position: absolute;
+  background-color: rgb(27 25 25);
+  height: 100%;
+  width: 100%;
+  z-index: 1000;
+}
+
+.alert img {
+  height: 40%;
+  width: 40%;
+}
+
+.alert p {
+  font-size: xx-large;
+}
+
+.alert button {
+  height: 10%;
+  width: 40%;
+  font-size: large;
+  font-weight: bold;
+  border-width: 2px;
+  border-color: green;
+}
