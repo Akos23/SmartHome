@@ -67,7 +67,12 @@ client.on("message", function (topic, message) {
 
   //front door
   if (topic.toString() === "update/Hall/lock/0") {
-    action = data.isLocked ? "closed front door" : "opened front door";
+    action =
+      data.name === "Unknown"
+        ? "access denied"
+        : data.isLocked
+        ? "closed front door"
+        : "opened front door";
     name = data.name;
   }
 
