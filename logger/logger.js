@@ -3,18 +3,6 @@ const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 
-//Set up express and listen on port 3333 for GET requests
-const app = express();
-app.use(cors());
-
-app.get("/history", (req, res) => {
-  res.send(database); //if someone asks for it give them tha database
-});
-
-app.listen(3333, () =>
-  console.log("Logger service started listening on port 3333")
-);
-
 //Load our "database" in memory and convert it to a JSON object
 let raw = fs.readFileSync("database.json");
 raw = raw.slice(0, raw.lastIndexOf(","));
@@ -25,6 +13,27 @@ console.log(database);
 //Create a stream for expanding our database with new log messages
 const stream = fs.createWriteStream("database.json", { flags: "a" });
 
+//Set up express and listen on port 3333 for GET/POST requests
+const app = express();
+
+//Adding middleware
+app.use(cors());
+app.use(express.json());
+
+app.get("/api/history", (req, res) => {
+  res.send(database); //if someone asks for it give them tha database
+});
+
+/*app.post("/history", (req, res) => {
+  const record = req.body;
+  stream.write(JSON.stringify(record, null, 2) + ",\n", (err) => {});
+  database.logs.push(record);
+});*/
+
+app.listen(3333, () =>
+  console.log("Logger service started listening on port 3333")
+);
+
 //New log messages will arrive on the update/history topic of our broker
 const client = mqtt.connect("mqtt://192.168.1.19:1883", {
   username: "logger service",
@@ -32,7 +41,7 @@ const client = mqtt.connect("mqtt://192.168.1.19:1883", {
 });
 
 client.on("connect", () => {
-  client.subscribe("update/history", (err) => {
+  client.subscribe("logger/history", (err) => {
     if (!err) {
       client.publish("debug", "logger service connected");
       console.log("connected to broker");
