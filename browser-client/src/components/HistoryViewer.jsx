@@ -10,7 +10,7 @@ class HistorViewer extends Component {
     };
   }
   updateLogs = () => {
-    fetch("http://192.168.1.7:3333/api/history")
+    fetch("http://192.168.1.19:3333/api/history")
       .then((response) => response.json())
       .then((data) => {
         const logs = data.logs.map(({ time, name, action }) => {
