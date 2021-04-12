@@ -41,28 +41,36 @@ const client = mqtt.connect("mqtt://192.168.1.19:1883", {
 });
 
 client.on("connect", () => {
-  client.subscribe("logger/history", (err) => {
-    if (!err) {
-      client.publish("debug", "logger service connected");
-      console.log("connected to broker");
-    }
-  });
+  client.subscribe("logger/history");
+  client.subscribe("notifications");
 });
 
 client.on("error", (err) => console.log(err.toString()));
 
 client.on("message", function (topic, message) {
-  // message format: name,action
-  const data = message.toString().split(",");
-  //add time-stamp
   const now = new Date();
+  let name;
+  let action;
+
+  if (message.toString() === "intrusion") {
+    name = "A Bad Person";
+    action = "entered your home";
+  } else {
+    // message format: name,action
+    const data = message.toString().split(",");
+    name = data[0];
+    action = data[1];
+  }
+
   //construct the new record
   const record = {
-    name: data[0],
-    action: data[1],
+    name: name,
+    action: action,
     time: now.getTime(),
   };
-  console.log(`new record added: ${record}`);
+
+  console.log(`new record added:`);
+  console.log(record);
 
   //save it to both: our "permanent" and in memory database
   stream.write(JSON.stringify(record, null, 2) + ",\n", (err) => {});
