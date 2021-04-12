@@ -311,6 +311,7 @@ class NavigationMenu extends Component {
         title: "Overview",
         isOn: false,
       },
+      isAlarmOn: false,
     };
   }
 
@@ -325,71 +326,72 @@ class NavigationMenu extends Component {
     }
   }
 
-  onMessage(topic, payload, packet) {
-    console.log("message arrived: topic: " + topic + " mess.:" + payload);
+  onMessage(topic, message) {
+    console.log("message arrived: topic: " + topic + " mess.:" + message);
+
+    const data = JSON.parse(message.toString());
 
     //split topic into subtopics
     const subtopics = topic.toString().split("/");
 
-    //We wont handle the following topics here:
+    //Topic for debugging purposes
+    if (subtopics[0] === "debug") {
+      return;
+    }
+
+    //motion detection: update/room/motion
     if (subtopics[2] === "motion") {
       return;
     }
 
-    if (subtopics[1] === "history") {
+    //update/alarm
+    if (subtopics[1] === "alarm") {
+      this.setState({ isAlarmOn: data.isOn });
       return;
     }
 
-    if (subtopics[0] === "debug") {
-      return;
-    }
+    //From here we know we should have this format:
+    //  update/card/devType/devId
+    //  control/card/dimmer/devId
+    //  control/card/rgb-led/devId
 
     const card = this.state.cards.find((card) => card.title === subtopics[1]);
     const device = card.devices.find(
       (device) =>
         device.type === subtopics[2] && device.devId === parseInt(subtopics[3])
     );
-    const propName = subtopics[4];
-
-    const message = payload.toString();
 
     //Check if everything has a valid value
-    if (!(device && propName && message && card)) {
+    if (!(device && card && data)) {
       console.log("invalid topic or message");
       return;
     }
 
-    //Lets update here what we have to:
+    //Lets figure out the property names
+    //TODO: device value should be an object so we could just simply assign the message to it
     let newValue;
-    switch (propName) {
-      case "isOn":
-      case "isLocked":
-      case "isActive":
-        newValue = message === "true" ? true : false;
-        break;
-      case "value":
-      case "effectID":
-        newValue = parseInt(message);
-        break;
-      default:
-        newValue = "default";
-    }
+    let propName;
 
-    if (device.name === "security system") {
-      const action = newValue
-        ? "armed the security system"
-        : "disarmed the security system";
-      const message = `${this.props.username},${action}`;
-      this.props.client.publish(
-        /*"logger/history", message*/ "notifications",
-        "intrusion"
-      );
+    switch (subtopics[2]) {
+      case "switch":
+      case "lamp":
+        propName = "isOn";
+      case "dimmer":
+      case "stepper":
+      case "rgb-led":
+      case "servo":
+      case "temp-setter":
+      case "temp-sensor":
+        propName = "value";
+      case "lock":
+        propName = "isLocked";
     }
-
-    this.handleChange(card, device, propName, newValue);
+    //Let's update the user interface
+    this.updateUI(card, device, propName, data["propName"]);
   }
 
-  handleChange = (card, device, propName, newValue) => {
+  //STATE UPDATES
+  updateUI = (card, device, propName, newValue) => {
     //Copy the cards array
     const cards = [...this.state.cards];
 
@@ -409,36 +411,6 @@ class NavigationMenu extends Component {
     cards[index].devices[devIndex][propName] = newValue;
 
     this.setState({ cards });
-  };
-
-  handleSwitch = (card, device, newValue) => {
-    const topic = `control/${card.title}/${device.type}/${device.devId}/isOn`;
-    this.props.client.publish(topic, newValue.toString());
-  };
-
-  handleSlider = (card, device, newValue) => {
-    const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
-    this.props.client.publish(topic, newValue.toString(), { retain: true });
-  };
-
-  handleLockButton = (card, device, newValue) => {
-    const topic = `control/${card.title}/${device.type}/${device.devId}/isLocked`;
-    this.props.client.publish(topic, newValue.toString());
-  };
-
-  handleStepper = (card, device, newValue) => {
-    const topic = `control/${card.title}/${device.type}/${device.devId}/value`;
-    this.props.client.publish(topic, newValue.toString());
-  };
-
-  handleEffectCheckbox = (card, newValue) => {
-    const topic = `control/${card.title}/effect-selector/0/isActive`;
-    this.props.client.publish(topic, newValue.toString());
-  };
-
-  handleEffectSelection = (card, newValue) => {
-    const topic = `control/${card.title}/effect-selector/0/effectID`;
-    this.props.client.publish(topic, newValue.toString());
   };
 
   handleEffectUpdate = (card, propName, newValue) => {
@@ -463,8 +435,63 @@ class NavigationMenu extends Component {
     this.setState({ cards });
   };
 
+  // EVENT HANDLERS - Sending messegas to broker
+  handleSwitch = (card, device, newValue) => {
+    const topic = `control/${card.title}/${device.type}/${device.devId}`;
+    const message = {
+      isOn: newValue,
+    };
+    this.props.client.publish(topic, JSON.stringify(message));
+  };
+
+  handleSlider = (card, device, newValue) => {
+    const topic = `control/${card.title}/${device.type}/${device.devId}`;
+    const message = {
+      value: newValue,
+    };
+    this.props.client.publish(topic, JSON.stringify(message));
+  };
+
+  handleLockButton = (card, device, newValue) => {
+    const topic = `control/${card.title}/${device.type}/${device.devId}`;
+    const message = {
+      isLocked: newValue,
+    };
+    this.props.client.publish(topic, JSON.stringify(message));
+  };
+
+  handleStepper = (card, device, newValue) => {
+    const topic = `control/${card.title}/${device.type}/${device.devId}`;
+    const message = {
+      value: newValue,
+    };
+    this.props.client.publish(topic, JSON.stringify(message));
+  };
+
+  handleEffectCheckbox = (card, newValue) => {
+    const topic = `control/${card.title}/effect-selector/0`;
+    const message = {
+      isActive: newValue,
+    };
+    this.props.client.publish(topic, JSON.stringify(message));
+  };
+
+  handleEffectSelection = (card, newValue) => {
+    const topic = `control/${card.title}/effect-selector/0`;
+    const message = {
+      effectID: newValue,
+    };
+    this.props.client.publish(topic, JSON.stringify(message));
+  };
+
   handleAlarm = () => {
-    this.props.history.push("/home");
+    const { client, history } = this.props;
+    this.setState({ isAlarmOn: false });
+    const message = {
+      isOn: false,
+      name: this.props.username,
+    };
+    this.props.client.publish("control/alarm", JSON.stringify(message));
   };
 
   render() {
@@ -502,12 +529,15 @@ class NavigationMenu extends Component {
           {/*<div className="movementIndicator"></div>
           <div className="lightsIndicator"></div>*/}
         </div>
-        <Route
+        {/*<Route
           path={"/home/intrusion"}
           render={(props) => (
             <SecurityAlert {...props} onButtonHandler={this.handleAlarm} />
           )}
-        />
+          />*/}
+        {this.state.isAlarmOn && (
+          <SecurityAlert onButtonHandler={this.handleAlarm} />
+        )}
       </div>
     );
   }
