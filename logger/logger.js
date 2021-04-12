@@ -3,6 +3,16 @@ const fs = require("fs");
 const express = require("express");
 const cors = require("cors");
 
+const mqtt_server = "mqtt://192.168.1.19:8888";
+const mqtt_topics = [
+  "update/Hall/lock/0",
+  "update/alarm",
+  "update/General/switch/6",
+];
+
+const mqtt_username = "logger service";
+const mqtt_password = "19961224";
+
 //Load our "database" in memory and convert it to a JSON object
 let raw = fs.readFileSync("database.json");
 raw = raw.slice(0, raw.lastIndexOf(","));
@@ -35,31 +45,44 @@ app.listen(3333, () =>
 );
 
 //New log messages will arrive on the update/history topic of our broker
-const client = mqtt.connect("mqtt://192.168.1.19:1883", {
-  username: "logger service",
-  password: "19961224",
+const client = mqtt.connect(mqtt_server, {
+  username: mqtt_username,
+  password: mqtt_password,
 });
 
 client.on("connect", () => {
-  client.subscribe("logger/history");
-  client.subscribe("notifications");
+  for (let i = 0; i < mqtt_topics.length; i++) {
+    client.subscribe(mqtt_topics[i]);
+  }
 });
 
 client.on("error", (err) => console.log(err.toString()));
 
 client.on("message", function (topic, message) {
+  const data = JSON.parse(message.toString());
+
   const now = new Date();
   let name;
   let action;
 
-  if (message.toString() === "intrusion") {
-    name = "A Bad Person";
-    action = "entered your home";
-  } else {
-    // message format: name,action
-    const data = message.toString().split(",");
-    name = data[0];
-    action = data[1];
+  //front door
+  if (topic.toString() === "update/Hall/lock/0") {
+    action = data.isLocked ? "closed front door" : "opened front door";
+    name = data.name;
+  }
+
+  //security system
+  if (topic.toString() === "update/General/switch/6") {
+    action = data.isOn
+      ? "armed the security system"
+      : "disarmed the security system";
+    name = data.name;
+  }
+
+  //alarm
+  if (topic.toString() === "update/alarm") {
+    action = data.isOn ? "entered your home" : "switched off the alarm";
+    name = data.name;
   }
 
   //construct the new record
