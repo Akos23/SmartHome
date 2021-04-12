@@ -14,12 +14,19 @@ class App extends Component {
     error: "",
   };
 
+  mqtt_server = "mqtt://192.168.1.19:8888";
+  mqtt_topics = [
+    "update/#",
+    "debug",
+    "control/+/rgb-led/#",
+    "control/+/dimmer/#",
+  ];
   handleLogin = (e, history) => {
     //Don't reload the resources
     e.preventDefault();
 
     //Try to connect to the mqtt server with the given credentials
-    const client = mqtt.connect("mqtt://192.168.1.19:8888", this.state.account);
+    const client = mqtt.connect(this.mqtt_server, this.state.account);
 
     //What should we do if we can or cannot connect?
     client.on("connect", () => this.onConnect(history));
@@ -48,10 +55,10 @@ class App extends Component {
   //We are connected...
   onConnect(history) {
     // Lets subscribe to the topics we are intrested in
-    this.state.client.subscribe("update/#");
-    this.state.client.subscribe("debug"); //here we can send debug information from ESP so we dont have to use the serial monitor
-    this.state.client.subscribe("control/+/rgb-led/#");
-    this.state.client.subscribe("control/+/dimmer/#");
+    for (let i = 0; i < this.mqtt_topics.length; i++) {
+      this.state.client.subscribe(this.mqtt_topics[i]);
+    }
+
     console.log("connected to broker");
 
     //Now we redirect the user to the navigation menu
