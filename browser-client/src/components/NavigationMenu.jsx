@@ -376,6 +376,7 @@ class NavigationMenu extends Component {
       case "switch":
       case "lamp":
         propName = "isOn";
+        break;
       case "dimmer":
       case "stepper":
       case "rgb-led":
@@ -383,11 +384,17 @@ class NavigationMenu extends Component {
       case "temp-setter":
       case "temp-sensor":
         propName = "value";
+        break;
       case "lock":
         propName = "isLocked";
+        break;
+      default:
+        console.log("invalid device type");
+        return;
     }
+
     //Let's update the user interface
-    this.updateUI(card, device, propName, data["propName"]);
+    this.updateUI(card, device, propName, data[propName]);
   }
 
   //STATE UPDATES
