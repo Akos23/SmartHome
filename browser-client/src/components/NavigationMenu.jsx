@@ -27,21 +27,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++,
+              devId: lampID++, //0
               name: "standing lamp",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: switchID++,
+              devId: switchID++, //0
               name: "TV",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: tempSensorID++,
+              devId: tempSensorID++, //0
               name: "temperature",
               type: "temp-sensor",
               value: 23,
@@ -49,7 +49,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 3,
-              devId: tempSetterID++,
+              devId: tempSetterID++, //0
               name: "set temperature",
               type: "temp-setter",
               value: 23,
@@ -57,7 +57,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 4,
-              devId: servoID++,
+              devId: servoID++, //0
               name: "window",
               type: "servo",
               value: 0,
@@ -71,21 +71,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: dimmerID++,
+              devId: dimmerID++, //0
               name: "dimmer lights",
               type: "dimmer",
               value: 0,
             },
             {
               id: 1,
-              devId: switchID++,
+              devId: switchID++, //1
               name: "TV",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: stepperID++,
+              devId: stepperID++, //0
               name: "shutter",
               type: "stepper",
               value: 0,
@@ -99,21 +99,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: dimmerID++,
+              devId: dimmerID++, //1
               name: "dimmer lights",
               type: "dimmer",
               value: 0,
             },
             {
               id: 1,
-              devId: switchID++,
+              devId: switchID++, //2
               name: "TV",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: stepperID++,
+              devId: stepperID++, //1
               name: "shutter",
               type: "stepper",
               value: 0,
@@ -127,21 +127,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++,
+              devId: lampID++, //1
               name: "under cabinet lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: lampID++,
+              devId: lampID++, //2
               name: "kitchen island lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 2,
-              devId: switchID++,
+              devId: switchID++, //3
               name: "extractor fan",
               type: "switch",
               isOn: false,
@@ -154,14 +154,14 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++,
+              devId: lampID++, //3
               name: "lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: lockID++,
+              devId: lockID++, //0
               name: "front door",
               type: "lock",
               isLocked: false,
@@ -174,14 +174,14 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++,
+              devId: lampID++, //4
               name: "lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: stepperID++,
+              devId: stepperID++, //2
               name: "garage door",
               type: "stepper",
               value: 0,
@@ -195,7 +195,7 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++,
+              devId: lampID++, //5
               name: "lights",
               type: "lamp",
               isOn: false,
@@ -269,7 +269,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 1,
-              devId: tempSetterID++,
+              devId: tempSetterID++, //1
               name: "set temperature",
               type: "temp-setter",
               value: 23,
@@ -277,22 +277,29 @@ class NavigationMenu extends Component {
             },
             {
               id: 2,
-              devId: switchID++,
+              devId: switchID++, //4
               name: "power saving mode",
               type: "switch",
               isOn: false,
             },
             {
               id: 3,
-              devId: switchID++,
+              devId: switchID++, //5
               name: "main power",
               type: "switch",
               isOn: true,
             },
             {
               id: 4,
-              devId: switchID++,
+              devId: switchID++, //6
               name: "alarm",
+              type: "switch",
+              isOn: false,
+            },
+            {
+              id: 5,
+              devId: switchID++, //7
+              name: "silent alarm",
               type: "switch",
               isOn: false,
             },
@@ -365,6 +372,14 @@ class NavigationMenu extends Component {
         break;
       default:
         newValue = "default";
+    }
+
+    if (device.name === "alarm") {
+      const action = newValue
+        ? "armed the security system"
+        : "disarmed the security system";
+      const message = `${this.props.username},${action}`;
+      this.props.client.publish("logger/history", message);
     }
 
     this.handleChange(card, device, propName, newValue);
