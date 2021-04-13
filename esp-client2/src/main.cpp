@@ -86,8 +86,8 @@ const int8 switches[] =
   -1,     //K_ExFan
   -1,     //power saving mode?? --> its only a logical switch
   -1,     //main power --> everything except security related things
-  -1      //security system
-  -1      //silent alarm
+  -1,     //security system
+  -1,     //silent alarm
 };
 
 //other constants
@@ -101,6 +101,7 @@ void checkForRFIDCard();
 //global variables
 Adafruit_MCP23017 mcp;
 bool isSecuritySystemOn = false;
+bool isSilentAlarmOn = false;
 bool isAlarmOn = false;
 bool isPowerSavingOn = false;
 bool isDoorOpen = false;
@@ -250,6 +251,18 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "switch")
   {
+    if(devId == 7) //Security system
+    {
+      isSecuritySystemOn = doc["isOn"];
+      return;
+    }
+
+    if(devId == 8) //Silent alarm
+    {
+      isSilentAlarmOn = doc["isOn"];
+      return;
+    }
+    
    /* bool newValue = message == "true";
     const int8 physicalPin = switches[devId];
     if(physicalPin > -1)
