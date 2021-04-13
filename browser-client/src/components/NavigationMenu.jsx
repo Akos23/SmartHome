@@ -499,6 +499,10 @@ class NavigationMenu extends Component {
       name: this.props.username,
     };
     this.props.client.publish("control/alarm", JSON.stringify(message));
+    this.props.client.publish(
+      "control/General/switch/6",
+      JSON.stringify(message)
+    );
   };
 
   render() {
