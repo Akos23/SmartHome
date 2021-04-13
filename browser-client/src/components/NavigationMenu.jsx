@@ -9,7 +9,7 @@ class NavigationMenu extends Component {
     super(props);
 
     //what are we gonna do here if we are not connected?
-    //if (!this.props.client) this.props.history.push("/");
+    if (!this.props.client) this.props.history.push("/");
 
     let lampID = 0;
     let servoID = 0;
@@ -449,7 +449,7 @@ class NavigationMenu extends Component {
       isOn: newValue,
       name: this.props.username,
     };
-    this.props.client.publish(topic, JSON.stringify(message));
+    this.props.client.publish(topic, JSON.stringify(message), { retain: true });
   };
 
   handleSlider = (card, device, newValue) => {
@@ -500,10 +500,13 @@ class NavigationMenu extends Component {
       isOn: false,
       name: this.props.username,
     };
-    this.props.client.publish("control/alarm", JSON.stringify(message));
+    this.props.client.publish("control/alarm", JSON.stringify(message), {
+      retain: true,
+    });
     this.props.client.publish(
       "control/General/switch/6",
-      JSON.stringify(message)
+      JSON.stringify(message),
+      { retain: true }
     );
   };
 
