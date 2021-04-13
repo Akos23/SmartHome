@@ -13,8 +13,8 @@ void setup_mcp(Adafruit_MCP23017& mcp, const std::vector<uint8>& interruptPins, 
 {
     mcp.begin();
 
-    //Don't mirror INTA and INTB, in case of an interrupt send a logical HIGH signal
-    mcp.setupInterrupts(false, false, HIGH);
+    //mirror INTA and INTB, in case of an interrupt send a logical LOW signal
+    mcp.setupInterrupts(true, false, LOW);
 
     //Trigger an interrupt on input value changes
     for (int i = 0; i < interruptPins.size(); i++)
