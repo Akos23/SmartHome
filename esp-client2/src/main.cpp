@@ -155,11 +155,11 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
   //String topic = "update/" + pirToRoom[interruptPin] + "/motion";
   String topic = "control/alarm";
 
-  StaticJsonDocument<48> doc;
+  StaticJsonDocument<100> doc;
   doc["isOn"] = true;
   doc["name"] = "A Bad Person";
   doc["room"] = pirToRoom[interruptPin];
-  
+
   String message;
   serializeJson(doc, message);
 
