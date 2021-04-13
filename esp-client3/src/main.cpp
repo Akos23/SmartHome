@@ -153,17 +153,18 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
   //String topic = "control/alarm"; --> in case of other ESPs
 
   //Since this ESP controls the alarm:
-  //We set off the alarm
-  isAlarmOn = true;
+  //If silent alarm is not enabled we set off the alarm
+  if(!isSilentAlarmOn)
+    isAlarmOn = true;
 
   //And let the others know
   String topic = "update/alarm";
 
-  StaticJsonDocument<48> doc;
+  StaticJsonDocument<100> doc;
   doc["isOn"] = true;
   doc["name"] = "A Bad Person";
   doc["room"] = pirToRoom[interruptPin];
-  
+
   String message;
   serializeJson(doc, message);
 
