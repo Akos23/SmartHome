@@ -1,13 +1,14 @@
 #include <Arduino.h>
-#include <_wifi.h>
-#include <_mqtt.h>
-#include <_mcp23017.h>
+#include <ArduinoJson.h>
 #include <map>
+#include "_wifi.h"
+#include "_mqtt.h"
+#include "_mcp23017.h"
+#include "_alarm.h"
 
-
-//////////////////////////////////////////////////////////////////////
-//-----> ESP3: Takes care of the Main bedroom and the Garage <-----//
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+//-----> ESP3: Takes care of the Main bedroom and the Garage  <-----//
+/////////////////////////////////////////////////////////////////////
 
 /*
   LR: living room
@@ -20,106 +21,99 @@
   MS: motion sensor
 */
 
-//Connect the LEDs/TVs to MCP
-const uint8 LR_standingLamp = MCP_GPIO_A0;
-const uint8 LR_TV = MCP_GPIO_A1;
-const uint8 GB_TV = MCP_GPIO_A2;
-const uint8 K_UC_lights = MCP_GPIO_A3;
-const uint8 K_KI_lights = MCP_GPIO_A4;
-const uint8 H_lights = MCP_GPIO_A5;
-const uint8 G_lights = MCP_GPIO_A6;
-const uint8 B_lights = MCP_GPIO_A7;
+//Connect the devices to MCP
+const uint8 G_lights = MCP_GPIO_A7;
 
 //Connect the motion sensors to MCP
-const uint8 LR_MS = MCP_GPIO_B0;
-const uint8 GB_MS = MCP_GPIO_B1;
-const uint8 MB_MS = MCP_GPIO_B2;
-const uint8 K_MS = MCP_GPIO_B3;
-const uint8 H_MS = MCP_GPIO_B4;
-const uint8 G_MS = MCP_GPIO_B5;
-const uint8 B_MS = MCP_GPIO_B6;
+const uint8 MB_MS = MCP_GPIO_B0;
+const uint8 G_MS = MCP_GPIO_B1;
 
 //To know which sensor is for which room 
 std::map<uint8, String> pirToRoom = 
 {
-  {LR_MS, "Living room"},
-  {GB_MS, "Guest bedroom"},
   {MB_MS, "Main bedroom"},
-  {K_MS, "Kitchen"},
-  {H_MS, "Hall"},
-  {G_MS, "Garage"},
-  {B_MS, "Bathroom"}
+  {G_MS, "Garage"}
 };
-
-//Connect the alarm
-//...
 
 //Tell the MCP how to configure the pins the devices are connected to
 const std::vector<uint8> MCP_interruptPins = 
   {
-    LR_MS,
-    GB_MS,
     MB_MS,
-    K_MS,
-    H_MS,
-    G_MS,
-    B_MS
+    G_MS
   };
 
 const std::vector<uint8> MCP_outputPins = 
 {
-  LR_standingLamp,
-  LR_TV,
-  GB_TV,
-  K_UC_lights,
-  K_KI_lights,
-  H_lights,
   G_lights,
-  B_lights
 };
 
-
-extern PubSubClient mqttClient;
-Adafruit_MCP23017 mcp;
-ICACHE_RAM_ATTR void ISR_movementChanged();
-
 //Connect the MCP23017 to the ESP
-const uint8 MCP_INTB = 14; //D5
-const uint8 MCP_SDA = 4; //D2 --> Wire.h already has a global TwoWire object initialized with these 2 pins
-const uint8 MCP_SCL = 5; //D1     and the mcp library uses that object by default, so we wont do anything with these pins
+const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low input becuase it is pulled high internally
+const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object initialized with these 2 pins
+const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
+
+//Connect alarm to the ESP
+const uint8 alarm = D5;
 
 //mapping between devID(comes form browser-client) and physical pins
 //-1 means that its not controlled by this ESP but probably by an other one 
 const int8 lamps[] = 
 {
-  LR_standingLamp,
-  K_UC_lights,
-  K_KI_lights,
-  H_lights,
-  G_lights,
-  B_lights
+  -1,//LR_standingLamp,
+  -1,//K_UC_lights,
+  -1,//K_KI_lights,
+  -1,//H_lights,
+  G_lights,//G_lights,
+  -1//B_lights
 };
 
 const int8 switches[] = 
 {
-  LR_TV,
+  -1,     //LR_TV,
   -1,     //MB_TV
-  GB_TV,
+  -1,     //GB_TV,
   -1,     //K_ExFan
   -1,     //power saving mode?? --> its only a logical switch
   -1,     //main power --> everything except security related things
-  -1     //logical switch
+  -1,     //security system
+  -1,     //silent alarm
 };
+
+//other constants
+const uint alarmFrequency = 300; //Hz
+const uint alarmSpeed = 500; //s
+
+//Forward declarations
+extern PubSubClient mqttClient;
+ICACHE_RAM_ATTR void ISR_movementChanged();
+
+//global variables
+Adafruit_MCP23017 mcp;
+bool isSecuritySystemOn = false;
+bool isSilentAlarmOn = false;
+bool isAlarmOn = false;
+bool isPowerSavingOn = false;
+bool isDoorOpen = false;
+
 void setup() {
+  
+  //Setup alarm
+  pinMode(alarm, OUTPUT);
+  digitalWrite(alarm, LOW);
+  noTone(alarm);
+
   //Connect to local network
   setup_wifi();
+  
   //Setup MCP with interrupt
+  //On MCP: interrupt on change
+  //On ESP: interrupt on Falling edge (active low)
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
-  mcp.readGPIOAB();
-  attachInterrupt(digitalPinToInterrupt(MCP_INTB), ISR_movementChanged, RISING);
-
+  attachInterrupt(digitalPinToInterrupt(MCP_INTB), ISR_movementChanged, FALLING);
+  
 }
+
 
 void loop() {
   
@@ -130,30 +124,94 @@ void loop() {
   //this function keeps the connection alive and calls the onMessage function whenever
   //a message arrives on one of the topics we subscribed to
   mqttClient.loop();
+  
+  if(isAlarmOn)
+    doAlarm(0, alarmFrequency, alarmSpeed, alarm);
 }
-
 
 ICACHE_RAM_ATTR void ISR_movementChanged()
 {
+  //Let's see which pin caused the interrupt and read it's value
+  //We have to read it in order to clear the interrupt
   uint8 interruptPin = mcp.getLastInterruptPin();
   bool somethingMoved = mcp.digitalRead(interruptPin) == HIGH;
+  
+  //For now we only care if they are trying to rob us
+  if(!isSecuritySystemOn)
+    return;
 
-  String topic = "update/" + pirToRoom[interruptPin] + "/motion";
+  //Trigger the alarm only for the Rising edge
+  if(!somethingMoved)
+    return;
 
-  mqttClient.publish(topic.c_str(), somethingMoved ? "true" : "false");
+  //If the alarm is already on, dont trigger it again
+  if(isAlarmOn)
+    return;
+
+  //Then we create the topic and the message we want to send
+  //String topic = "update/" + pirToRoom[interruptPin] + "/motion"; 
+  //String topic = "control/alarm"; --> in case of other ESPs
+
+  //Since this ESP controls the alarm:
+  //We set off the alarm
+  isAlarmOn = true;
+
+  //And let the others know
+  String topic = "update/alarm";
+
+  StaticJsonDocument<48> doc;
+  doc["isOn"] = true;
+  doc["name"] = "A Bad Person";
+  doc["room"] = pirToRoom[interruptPin];
+  
+  String message;
+  serializeJson(doc, message);
+
+  //Finally we send it to the broker
+  mqttClient.publish(topic.c_str(), message.c_str());
 }
 
 void onMessage(String topic, byte *payload, unsigned int length)
 {
   String message = payloadToString(payload, length);
 
+  //Parsing the message and checking for errors
+  StaticJsonDocument<100> doc;
+  DeserializationError error = deserializeJson(doc, payload, length);
+
+  if (error) {
+    mqttClient.publish("debug", error.c_str());
+    return;
+  }
+
+  //const char* name = doc["name"]; //Who sent the message?
+  
+  if(topic == "control/alarm")
+  {
+    if(!isSilentAlarmOn)
+      isAlarmOn = doc["isOn"];
+
+    if(!isAlarmOn)
+      noTone(alarm);
+
+    //String deb("alarm: ");
+    //deb+= String(isSecuritySystemOn) + " silent: " + String(isSilentAlarmOn) + "new: " + String(isAlarmOn);
+    //mqttClient.publish("debug", deb.c_str());
+
+    topic.replace("control", "update");
+    bool retain = true;
+    mqttClient.publish(topic.c_str(), message.c_str(), retain);
+
+    return;
+  }
+  
   //split the topic into subtopics
   std::vector<String> topics = getSubTopics(topic);
   const String card = topics[1];
   const String devType = topics[2];
   const uint devId = topics[3].toInt();
-  const String propName = topics[4];
 
+  bool sendUpdate = false;
   ///////////////////////////////////////////////////////////////////////
   //Here we will control some device and if everything was fine
   //then we publish a message to the broker for the browser-clients 
@@ -162,20 +220,34 @@ void onMessage(String topic, byte *payload, unsigned int length)
   //Test: controlling the standing lamp in the living room
   if(devType == "lamp")
   {
-    bool newValue = message == "true";
+    bool newValue = doc["isOn"];
     const int8 physicalPin = lamps[devId];
     if(physicalPin > -1)
     {
       mcp.digitalWrite(physicalPin, newValue); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
+      sendUpdate = true;
     }
   }
   else if(devType == "switch")
   {
+    if(devId == 6) //Security system
+    {
+      isSecuritySystemOn = doc["isOn"];
+      sendUpdate = true;
+    }
+
+    if(devId == 7) //Silent alarm
+    {
+      isSilentAlarmOn = doc["isOn"];
+      sendUpdate = true;
+    }
+
     bool newValue = message == "true";
     const int8 physicalPin = switches[devId];
     if(physicalPin > -1)
     {
       mcp.digitalWrite(physicalPin, newValue); //for now we assume that every switch is connected to the mcu and not directly to the ESP
+      sendUpdate = true;
     }
   }
   else if(devType == "temp-setter")
@@ -205,10 +277,8 @@ void onMessage(String topic, byte *payload, unsigned int length)
 
   topic.replace("control", "update");
 
-  //These 2 types of devices get too many messages in a short period of time
-  //So if the browser waited for conformation from the device to update their
-  //UI then we wouldn't get a smooth experience
-  if(!(devType == "rgb-led" || devType == "dimmer"))
+  //The ESP sends updates only on devices that are actually controlled by it
+  if(sendUpdate)
   {
     bool retain = true; //broker will store the last message so when a new brower-client connect it will get this message and will know the current state
     mqttClient.publish(topic.c_str(), message.c_str(), retain);
