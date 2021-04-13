@@ -101,9 +101,7 @@ void checkForRFIDCard();
 //global variables
 Adafruit_MCP23017 mcp;
 bool isSecuritySystemOn = false;
-bool isSilentAlarmOn = false;
 bool isAlarmOn = false;
-bool isPowerSavingOn = false;
 bool isDoorOpen = false;
 
 void setup() {
@@ -121,7 +119,6 @@ void setup() {
   SPI.begin();        
   mfrc522.PCD_Init(); 
 }
-
 
 void loop() {
   
@@ -146,12 +143,23 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
   if(!isSecuritySystemOn)
     return;
 
+  //Trigger the alarm only for the Rising edge
+  if(!somethingMoved)
+    return;
+
+  //If the alarm is already on, dont trigger it again
+  if(isAlarmOn)
+    return;
+
   //Then we create the topic and the message we want to send
   //String topic = "update/" + pirToRoom[interruptPin] + "/motion";
   String topic = "control/alarm";
 
   StaticJsonDocument<48> doc;
   doc["isOn"] = true;
+  doc["name"] = "A Bad Person";
+  doc["room"] = pirToRoom[interruptPin];
+  
   String message;
   serializeJson(doc, message);
 
@@ -218,15 +226,19 @@ void onMessage(String topic, byte *payload, unsigned int length)
     return;
   }
 
-  const char* name = doc["name"]; //Who sent the message?
+  //const char* name = doc["name"]; //Who sent the message?
   
-  if(topic == "control/alarm")
+  if(topic == "update/alarm")
   {
-    bool isOn = doc["isOn"]; 
-    //...
+    isAlarmOn = doc["isOn"];
     return;
   }
   
+  if(topic == "update/General/switch/6") //security system
+  {
+    isSecuritySystemOn = doc["isOn"];
+    return;
+  }
 
   //split the topic into subtopics
   std::vector<String> topics = getSubTopics(topic);
@@ -234,6 +246,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
   const String devType = topics[2];
   const uint devId = topics[3].toInt();
 
+  bool sendUpdate = false;
   ///////////////////////////////////////////////////////////////////////
   //Here we will control some device and if everything was fine
   //then we publish a message to the broker for the browser-clients 
@@ -247,28 +260,18 @@ void onMessage(String topic, byte *payload, unsigned int length)
     if(physicalPin > -1)
     {
       mcp.digitalWrite(physicalPin, newValue); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
+      sendUpdate = true;
     }
   }
   else if(devType == "switch")
   {
-    if(devId == 7) //Security system
-    {
-      isSecuritySystemOn = doc["isOn"];
-      return;
-    }
-
-    if(devId == 8) //Silent alarm
-    {
-      isSilentAlarmOn = doc["isOn"];
-      return;
-    }
-    
-   /* bool newValue = message == "true";
+    bool newValue = message == "true";
     const int8 physicalPin = switches[devId];
     if(physicalPin > -1)
     {
       mcp.digitalWrite(physicalPin, newValue); //for now we assume that every switch is connected to the mcu and not directly to the ESP
-    }*/
+      sendUpdate = true;
+    }
   }
   else if(devType == "temp-setter")
   {
@@ -297,10 +300,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
 
   topic.replace("control", "update");
 
-  //These 2 types of devices get too many messages in a short period of time
-  //So if the browser waited for conformation from the device to update their
-  //UI then we wouldn't get a smooth experience
-  if(!(devType == "rgb-led" || devType == "dimmer"))
+  if(sendUpdate)
   {
     bool retain = true; //broker will store the last message so when a new brower-client connect it will get this message and will know the current state
     mqttClient.publish(topic.c_str(), message.c_str(), retain);

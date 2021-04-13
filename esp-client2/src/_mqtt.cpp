@@ -3,9 +3,15 @@
 
 extern WiFiClient wifiClient;
 void onMessage(String topic, byte *payload, unsigned int length);
-const char *mqtt_server = "192.168.1.19";
+const char* mqtt_server = "192.168.1.19";
 const char* mqtt_username = "ESP2";
 const char* mqtt_password = "19961224";
+const std::vector<String> mqtt_topics = 
+{
+  "control/#",
+  "update/alarm",
+  "update/General/switch/6",
+};
 
 PubSubClient mqttClient(mqtt_server, 1883, onMessage, wifiClient);
 
@@ -21,7 +27,10 @@ void reconnect()
     // Attempt to connect
     if (mqttClient.connect(clientId.c_str(), mqtt_username, mqtt_password))
     {
-      mqttClient.subscribe("control/#"); //to all the topics that start with control/
+      for(int i = 0; i<mqtt_topics.size(); i++)
+      {
+        mqttClient.subscribe(mqtt_topics[i].c_str()); 
+      }
       String message(mqtt_username);
       message += " is connected";
       mqttClient.publish("debug", message.c_str());
