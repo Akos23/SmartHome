@@ -329,8 +329,6 @@ class NavigationMenu extends Component {
   onMessage(topic, message) {
     console.log("message arrived: topic: " + topic + " mess.:" + message);
 
-    const data = JSON.parse(message.toString());
-
     //split topic into subtopics
     const subtopics = topic.toString().split("/");
 
@@ -343,6 +341,8 @@ class NavigationMenu extends Component {
     if (subtopics[2] === "motion") {
       return;
     }
+
+    const data = JSON.parse(message.toString());
 
     //update/alarm
     if (subtopics[1] === "alarm") {
