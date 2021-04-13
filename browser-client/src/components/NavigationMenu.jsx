@@ -447,6 +447,7 @@ class NavigationMenu extends Component {
     const topic = `control/${card.title}/${device.type}/${device.devId}`;
     const message = {
       isOn: newValue,
+      name: this.props.username,
     };
     this.props.client.publish(topic, JSON.stringify(message));
   };
@@ -463,6 +464,7 @@ class NavigationMenu extends Component {
     const topic = `control/${card.title}/${device.type}/${device.devId}`;
     const message = {
       isLocked: newValue,
+      name: this.props.username,
     };
     this.props.client.publish(topic, JSON.stringify(message));
   };
