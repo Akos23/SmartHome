@@ -20,6 +20,7 @@ class HistorViewer extends Component {
             action: action,
           };
         });
+        logs.sort((a, b) => b.time.getTime() - a.time.getTime());
         this.setState({ logs });
         console.log(logs);
       });
