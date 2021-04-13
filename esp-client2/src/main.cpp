@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <MFRC522.h>
 #include <map>
 #include "_wifi.h"
 #include "_mqtt.h"
@@ -47,9 +48,23 @@ const std::vector<uint8> MCP_outputPins =
 };
 
 //Connect the MCP23017 to the ESP
-const uint8 MCP_INTB = 2; //D4 --> this can only function as an active low input becuase it is pulled high internally
-const uint8 MCP_SDA = 4; //D2 --> Wire.h already has a global TwoWire object initialized with these 2 pins
-const uint8 MCP_SCL = 5; //D1     and the mcp library uses that object by default, so we wont do anything with these pins
+const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low input becuase it is pulled high internally
+const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object initialized with these 2 pins
+const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
+
+//Conncect the RFID reader to the ESP
+const uint8 RFID_RST = D0;
+const uint8 RFID_SDA = D8; //SS
+MFRC522 mfrc522(RFID_SDA, RFID_RST);
+
+//Authetnticated RFID tags
+std::map<String,String> users = 
+{
+  {"01 02 03 04","Ákos Dabasi"},
+  {"23 50 D0 18","Ildikó Orawetz"},
+  {"B3 7A D0 18","László Dabasi"},
+  {"B9 96 75 B3","Balázs Dabasi"}
+};
 
 //mapping between devID(comes form browser-client) and physical pins
 //-1 means that its not controlled by this ESP but probably by an other one 
@@ -75,27 +90,37 @@ const int8 switches[] =
   -1      //silent alarm
 };
 
+//other constants
+const uint64 RFID_pollingIntervall = 2000;
+
 //Forward declarations
 extern PubSubClient mqttClient;
 ICACHE_RAM_ATTR void ISR_movementChanged();
+void checkForRFIDCard();
 
+//global variables
 Adafruit_MCP23017 mcp;
+bool isSecuritySystemOn = false;
+bool isAlarmOn = false;
+bool isPowerSavingOn = false;
+bool isDoorOpen = false;
 
 void setup() {
   //Connect to local network
   setup_wifi();
+  
   //Setup MCP with interrupt
   //On MCP: interrupt on change
   //On ESP: interrupt on Falling edge (active low)
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
   attachInterrupt(digitalPinToInterrupt(MCP_INTB), ISR_movementChanged, FALLING);
+  
+  //Setup RFID reader
+  SPI.begin();        
+  mfrc522.PCD_Init(); 
 }
 
-//global variables
-bool isSecuritySystemOn = false;
-bool isAlarmOn = false;
-bool isPowerSavingOn = false;
 
 void loop() {
   
@@ -106,24 +131,77 @@ void loop() {
   //this function keeps the connection alive and calls the onMessage function whenever
   //a message arrives on one of the topics we subscribed to
   mqttClient.loop();
+  checkForRFIDCard();
 }
 
 ICACHE_RAM_ATTR void ISR_movementChanged()
 {
   //Let's see which pin caused the interrupt and read it's value
+  //We have to read it in order to clear the interrupt
   uint8 interruptPin = mcp.getLastInterruptPin();
   bool somethingMoved = mcp.digitalRead(interruptPin) == HIGH;
   
+  //For now we only care if they are trying to rob us
+  if(!isSecuritySystemOn)
+    return;
+
   //Then we create the topic and the message we want to send
-  String topic = "update/" + pirToRoom[interruptPin] + "/motion";
+  //String topic = "update/" + pirToRoom[interruptPin] + "/motion";
+  String topic = "control/alarm";
 
   StaticJsonDocument<48> doc;
-  doc["isOn"] = somethingMoved;
+  doc["isOn"] = true;
   String message;
   serializeJson(doc, message);
 
   //Finally we send it to the broker
   mqttClient.publish(topic.c_str(), message.c_str());
+}
+
+void checkForRFIDCard()
+{
+  //Let's just check every 2 seconds
+  static uint64 prev = millis();
+  if(millis()-prev < RFID_pollingIntervall)
+    return; 
+
+  if ( ! mfrc522.PICC_IsNewCardPresent())
+        return;
+
+  // Select one of the cards
+  if ( ! mfrc522.PICC_ReadCardSerial())
+      return;
+
+  // Read the key
+  String key= "";
+  for (byte i = 0; i < mfrc522.uid.size; i++) 
+  {
+    key += String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+    key += String(mfrc522.uid.uidByte[i], HEX);
+  }
+  key.toUpperCase();
+  key = key.substring(1);
+
+  StaticJsonDocument<48> doc;
+
+  //Check if its authorized
+  if(users.find(key)!= users.end())
+  {
+    isDoorOpen = !isDoorOpen;
+    doc["name"] = users[key];
+    doc["isLocked"] = isDoorOpen;
+  }
+  else
+  {
+    doc["name"] = "Unknown";
+    doc["isLocked"] = isDoorOpen;
+  }
+
+  String message;
+  serializeJson(doc, message);
+  mqttClient.publish("update/Hall/lock/0",message.c_str());
+
+  prev = millis();
 }
 
 void onMessage(String topic, byte *payload, unsigned int length)
