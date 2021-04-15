@@ -64,6 +64,14 @@ class NavigationMenu extends Component {
               value: 0,
               unit: "°",
             },
+            {
+              id: 5,
+              devId: stepperID++, //0
+              name: "sliding door",
+              type: "stepper",
+              value: 0,
+              unit: "%",
+            },
           ],
         },
         {
@@ -86,8 +94,8 @@ class NavigationMenu extends Component {
             },
             {
               id: 2,
-              devId: stepperID++, //0
-              name: "shutter",
+              devId: stepperID++, //1
+              name: "roller blind",
               type: "stepper",
               value: 0,
               unit: "%",
@@ -114,8 +122,8 @@ class NavigationMenu extends Component {
             },
             {
               id: 2,
-              devId: stepperID++, //1
-              name: "shutter",
+              devId: stepperID++, //2
+              name: "roller blind",
               type: "stepper",
               value: 0,
               unit: "%",
@@ -143,7 +151,7 @@ class NavigationMenu extends Component {
             {
               id: 2,
               devId: switchID++, //3
-              name: "extractor fan",
+              name: "exhaust fan",
               type: "switch",
               isOn: false,
             },
@@ -182,7 +190,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 1,
-              devId: stepperID++, //2
+              devId: stepperID++, //3
               name: "garage door",
               type: "stepper",
               value: 0,
