@@ -5,6 +5,7 @@
 #include "_mqtt.h"
 #include "_mcp23017.h"
 #include "_alarm.h"
+#include "_AccelStepper.h"
 
 ///////////////////////////////////////////////////////////////////////
 //-----> ESP3: Takes care of the Main bedroom and the Garage  <-----//
@@ -28,6 +29,13 @@ const uint8 G_lights = MCP_GPIO_A7;
 const uint8 MB_MS = MCP_GPIO_B0;
 const uint8 G_MS = MCP_GPIO_B1;
 
+//Connect garage door stepper motor to MCP
+AccelStepper garageDoor(AccelStepper::MotorInterfaceType::FULL4WIRE, 7,5,6,4, true, true);
+const uint8 G_door_s1 = MCP_GPIO_B7;
+const uint8 G_door_s2 = MCP_GPIO_B6;
+const uint8 G_door_s3 = MCP_GPIO_B5;
+const uint8 G_door_s4 = MCP_GPIO_B4;
+
 //To know which sensor is for which room 
 std::map<uint8, String> pirToRoom = 
 {
@@ -39,7 +47,7 @@ std::map<uint8, String> pirToRoom =
 const std::vector<uint8> MCP_interruptPins = 
   {
     MB_MS,
-    G_MS
+    G_MS,
   };
 
 const std::vector<uint8> MCP_outputPins = 
@@ -79,9 +87,29 @@ const int8 switches[] =
   -1,     //silent alarm
 };
 
+const double stepperLimits[] = 
+{
+  -1, //LR sliding door
+  -1, //MB roller blind
+  -1, //GB roller blind
+  2.5 //garage door
+};
+
+AccelStepper* devIdToStepper[] =
+{
+  nullptr,
+  nullptr,
+  nullptr,
+  &garageDoor
+};
+
 //other constants
 const uint alarmFrequency = 300; //Hz
 const uint alarmSpeed = 500; //s
+
+const uint stepperStepsPerRotation = 2038;
+const uint stepperSpeed = 900;
+const uint stepperMaxSpeed = 1000;
 
 //Forward declarations
 extern PubSubClient mqttClient;
@@ -111,6 +139,10 @@ void setup() {
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
   attachInterrupt(digitalPinToInterrupt(MCP_INTB), ISR_movementChanged, FALLING);
+
+  //Setup steppers
+  garageDoor.setMCP(&mcp,G_door_s1, G_door_s3, G_door_s2, G_door_s4);
+  garageDoor.setMaxSpeed(stepperMaxSpeed);
   
 }
 
@@ -127,6 +159,8 @@ void loop() {
   
   if(isAlarmOn)
     doAlarm(0, alarmFrequency, alarmSpeed, alarm);
+
+  garageDoor.runSpeedToPosition();
 }
 
 ICACHE_RAM_ATTR void ISR_movementChanged()
@@ -185,8 +219,6 @@ void onMessage(String topic, byte *payload, unsigned int length)
     return;
   }
 
-  //const char* name = doc["name"]; //Who sent the message?
-  
   if(topic == "control/alarm")
   {
     if(!isSilentAlarmOn)
@@ -243,7 +275,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
       sendUpdate = true;
     }
 
-    bool newValue = message == "true";
+    bool newValue = doc["isOn"];
     const int8 physicalPin = switches[devId];
     if(physicalPin > -1)
     {
@@ -265,7 +297,19 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "stepper")
   {
-    //TODO...
+    //depending on the device remap the set position
+    int newPosition = map(doc["value"], 0, 100, 0, stepperLimits[devId]*stepperStepsPerRotation);
+
+    //which device it is?
+    AccelStepper* stepper = devIdToStepper[devId];
+    //Should we move forwards or backwards?
+    int currentPos = stepper->currentPosition();
+    int direction = newPosition - currentPos > 0 ? 1 : -1;
+
+    //Set the new position and speed of the controlled device
+    stepper->moveTo(newPosition);
+    stepper->setSpeed(direction * stepperSpeed);
+    sendUpdate = true;
   }
   else if(devType == "lock")
   {
