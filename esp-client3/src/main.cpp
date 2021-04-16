@@ -6,6 +6,7 @@
 #include "_mcp23017.h"
 #include "_alarm.h"
 #include "_AccelStepper.h"
+#include "Servo.h"
 
 ///////////////////////////////////////////////////////////////////////
 //-----> ESP3: Takes care of the Main bedroom and the Garage  <-----//
@@ -60,6 +61,13 @@ const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low i
 const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object initialized with these 2 pins
 const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
 
+//Connect servos to the ESP
+Servo MB_window_R;
+const uint8 MB_windowServo_R = D6;
+
+Servo MB_window_L;
+const uint8 MB_windowServo_L = D7;
+
 //Connect alarm to the ESP
 const uint8 alarm = D5;
 
@@ -85,6 +93,18 @@ const int8 switches[] =
   -1,     //main power --> everything except security related things
   -1,     //security system
   -1,     //silent alarm
+};
+
+struct ServoData
+{
+  Servo* servo;
+  bool isRightOpening;
+};
+
+ServoData devIdToServo[] = 
+{
+  {&MB_window_R, true},
+  {&MB_window_L, false}
 };
 
 const double stepperLimits[] = 
@@ -144,6 +164,9 @@ void setup() {
   garageDoor.setMCP(&mcp,G_door_s1, G_door_s3, G_door_s2, G_door_s4);
   garageDoor.setMaxSpeed(stepperMaxSpeed);
   
+  //Setup servos
+  MB_window_R.attach(MB_windowServo_R);
+  MB_window_L.attach(MB_windowServo_L);
 }
 
 
@@ -293,7 +316,19 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "servo")
   {
-    //TODO...
+    uint newValue = doc["value"];
+
+    ServoData& servoData = devIdToServo[devId];
+
+    if(!servoData.servo)
+      return;
+    
+    //remap to the middle range because servos tend to jitter around their limits and we only need 90 degrees 
+    uint setPoint = servoData.isRightOpening ? 140 - newValue : 70 + newValue;
+    
+    servoData.servo->write(setPoint);
+    
+    sendUpdate = true;
   }
   else if(devType == "stepper")
   {
