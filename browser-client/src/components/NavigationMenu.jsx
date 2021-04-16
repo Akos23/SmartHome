@@ -58,14 +58,6 @@ class NavigationMenu extends Component {
             },
             {
               id: 4,
-              devId: servoID++, //0
-              name: "window",
-              type: "servo",
-              value: 0,
-              unit: "°",
-            },
-            {
-              id: 5,
               devId: stepperID++, //0
               name: "sliding door",
               type: "stepper",
@@ -99,6 +91,26 @@ class NavigationMenu extends Component {
               type: "stepper",
               value: 0,
               unit: "%",
+            },
+            {
+              id: 4,
+              devId: servoID++, //0
+              name: "right window",
+              type: "servo",
+              value: 0,
+              unit: "°",
+              min: 0,
+              max: 90,
+            },
+            {
+              id: 5,
+              devId: servoID++, //1
+              name: "left window",
+              type: "servo",
+              value: 0,
+              unit: "°",
+              min: 0,
+              max: 90,
             },
           ],
         },
