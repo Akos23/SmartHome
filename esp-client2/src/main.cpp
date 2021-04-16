@@ -5,6 +5,8 @@
 #include "_wifi.h"
 #include "_mqtt.h"
 #include "_mcp23017.h"
+#include "_AccelStepper.h"
+#include "Servo.h"
 
 //////////////////////////////////////////////////////////////////////////////////
 //-----> ESP2: Takes care of the Guest bedroom the Bathroom and the Hall <-----//
@@ -27,6 +29,13 @@ const uint8 B_lights = MCP_GPIO_A7;
 //Connect the motion sensors to MCP
 const uint8 B_MS = MCP_GPIO_B0;
 const uint8 GB_MS = MCP_GPIO_B1;
+
+//Connect rooler blind stepper motor to MCP
+AccelStepper rollerBlind(AccelStepper::MotorInterfaceType::FULL4WIRE, 7,5,6,4, true, true);
+const uint8 GB_rollerBlind_s1 = MCP_GPIO_B7;
+const uint8 GB_rollerBlind_s2 = MCP_GPIO_B6;
+const uint8 GB_rollerBlind_s3 = MCP_GPIO_B5;
+const uint8 GB_rollerBlind_s4 = MCP_GPIO_B4;
 
 //To know which sensor is for which room 
 std::map<uint8, String> pirToRoom = 
@@ -51,6 +60,10 @@ const std::vector<uint8> MCP_outputPins =
 const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low input becuase it is pulled high internally
 const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object initialized with these 2 pins
 const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
+
+//Connect servos to the ESP
+Servo MB_window;
+const uint8 MB_windowServo = D6;
 
 //Conncect the RFID reader to the ESP
 const uint8 RFID_RST = D0;
@@ -90,8 +103,34 @@ const int8 switches[] =
   -1,     //silent alarm
 };
 
+Servo* devIdToServo[] = 
+{
+  &MB_window,
+  nullptr, //GB window
+}; 
+
+const double stepperLimits[] = 
+{
+  4, //LR sliding door
+  2.5, //MB roller blind
+  2.5, //GB roller blind
+  2.5 //garage door
+};
+
+AccelStepper* devIdToStepper[] =
+{
+  nullptr,
+  nullptr,
+  &rollerBlind,
+  nullptr,
+};
+
 //other constants
 const uint64 RFID_pollingIntervall = 2000;
+
+const uint stepperStepsPerRotation = 2038;
+const uint stepperSpeed = 900;
+const uint stepperMaxSpeed = 1000;
 
 //Forward declarations
 extern PubSubClient mqttClient;
@@ -118,6 +157,13 @@ void setup() {
   //Setup RFID reader
   SPI.begin();        
   mfrc522.PCD_Init(); 
+
+  //Setup steppers
+  rollerBlind.setMCP(&mcp,GB_rollerBlind_s1, GB_rollerBlind_s3, GB_rollerBlind_s2, GB_rollerBlind_s4);
+  rollerBlind.setMaxSpeed(stepperMaxSpeed);
+
+  //Setup servos
+  MB_window.attach(MB_windowServo);
 }
 
 void loop() {
@@ -129,7 +175,10 @@ void loop() {
   //this function keeps the connection alive and calls the onMessage function whenever
   //a message arrives on one of the topics we subscribed to
   mqttClient.loop();
+  
   checkForRFIDCard();
+
+  rollerBlind.runSpeedToPosition();
 }
 
 ICACHE_RAM_ATTR void ISR_movementChanged()
@@ -265,7 +314,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "switch")
   {
-    bool newValue = message == "true";
+    bool newValue = doc["isOn"];
     const int8 physicalPin = switches[devId];
     if(physicalPin > -1)
     {
@@ -283,11 +332,36 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "servo")
   {
-    //TODO...
+    uint newValue = doc["value"];
+
+    Servo* servo = devIdToServo[devId];
+
+    if(!servo)
+      return;
+    
+    uint setPoint = map(newValue,0,100,0,90);
+    servo->write(setPoint);
   }
   else if(devType == "stepper")
   {
-    //TODO...
+    //which device it is?
+    AccelStepper* stepper = devIdToStepper[devId];
+
+    //Is it controlled by this ESP?
+    if(!stepper)
+      return;
+
+    //depending on the device remap the set position
+    int newPosition = map(doc["value"], 0, 100, 0, stepperLimits[devId]*stepperStepsPerRotation);
+
+    //Should we move forwards or backwards?
+    int currentPos = stepper->currentPosition();
+    int direction = newPosition - currentPos > 0 ? 1 : -1;
+
+    //Set the new position and speed of the controlled device
+    stepper->moveTo(newPosition);
+    stepper->setSpeed(direction * stepperSpeed);
+    sendUpdate = true;
   }
   else if(devType == "lock")
   {
