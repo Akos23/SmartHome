@@ -387,38 +387,12 @@ class NavigationMenu extends Component {
       return;
     }
 
-    //Lets figure out the property names
-    //TODO: device value should be an object so we could just simply assign the message to it
-    let newValue;
-    let propName;
-
-    switch (subtopics[2]) {
-      case "switch":
-      case "lamp":
-        propName = "isOn";
-        break;
-      case "dimmer":
-      case "stepper":
-      case "rgb-led":
-      case "servo":
-      case "temp-setter":
-      case "temp-sensor":
-        propName = "value";
-        break;
-      case "lock":
-        propName = "isLocked";
-        break;
-      default:
-        console.log("invalid device type");
-        return;
-    }
-
     //Let's update the user interface
-    this.updateUI(card, device, propName, data[propName]);
+    this.updateUI(card, device, data);
   }
 
   //STATE UPDATES
-  updateUI = (card, device, propName, newValue) => {
+  updateUI = (card, device, data) => {
     //Copy the cards array
     const cards = [...this.state.cards];
 
@@ -429,13 +403,12 @@ class NavigationMenu extends Component {
     //Copy the devices of this card
     cards[index].devices = [...this.state.cards[index].devices];
 
-    //Copy the device that raised the event
+    //Copy the device that raised the event and merge it with the new data
     const devIndex = cards[index].devices.indexOf(device);
     cards[index].devices[devIndex] = {
       ...this.state.cards[index].devices[devIndex],
+      ...data,
     };
-    //Set the new value for this device
-    cards[index].devices[devIndex][propName] = newValue;
 
     this.setState({ cards });
   };
@@ -467,7 +440,7 @@ class NavigationMenu extends Component {
     const topic = `control/${card.title}/${device.type}/${device.devId}`;
     const message = {
       isOn: newValue,
-      name: this.props.username,
+      user: this.props.username,
     };
     this.props.client.publish(topic, JSON.stringify(message), { retain: true });
   };
@@ -484,7 +457,7 @@ class NavigationMenu extends Component {
     const topic = `control/${card.title}/${device.type}/${device.devId}`;
     const message = {
       isLocked: newValue,
-      name: this.props.username,
+      user: this.props.username,
     };
     this.props.client.publish(topic, JSON.stringify(message));
   };
@@ -501,6 +474,7 @@ class NavigationMenu extends Component {
     const topic = `control/${card.title}/effect-selector/0`;
     const message = {
       isActive: newValue,
+      effectID: card.devices[3].effectID,
     };
     this.props.client.publish(topic, JSON.stringify(message));
   };
@@ -508,6 +482,7 @@ class NavigationMenu extends Component {
   handleEffectSelection = (card, newValue) => {
     const topic = `control/${card.title}/effect-selector/0`;
     const message = {
+      isActive: true,
       effectID: newValue,
     };
     this.props.client.publish(topic, JSON.stringify(message));
@@ -518,7 +493,7 @@ class NavigationMenu extends Component {
     this.setState({ isAlarmOn: false });
     const message = {
       isOn: false,
-      name: this.props.username,
+      user: this.props.username,
     };
     this.props.client.publish("control/alarm", JSON.stringify(message), {
       retain: true,
