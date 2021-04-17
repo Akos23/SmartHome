@@ -123,7 +123,7 @@ const uint stepperMaxSpeed = 1000;
 //Forward declarations
 extern PubSubClient mqttClient;
 ICACHE_RAM_ATTR void ISR_movementChanged();
-void checkForRFIDCard();
+void doLightingEffect(uint8 effect);
 
 //global variables
 Adafruit_MCP23017 mcp;
@@ -151,77 +151,6 @@ void setup() {
   FastLED.addLeds<WS2812B, 5, GRB>(leds, RGB_size);
 }
 
-void doLightingEffect(uint8 effect)
-{
-  static uint effect1Speed = 50;
-  static uint effect2Speed = 100;
-  static uint effect3Speed = 50;
-  static uint64 tLastStep = millis();
-  static uint step = 0;
-  static CRGB color = CRGB(255, 0, 0);
-  static CHSV hueColor = CHSV(0, 255, 150);
-  
-  switch(effect)
-  {
-    case 1:
-      if(millis() - tLastStep < effect1Speed)
-        return;
-
-      
-      for(int i = 0; i < RGB_size; i++)
-        leds[i] = CRGB(0, 0, 0);
-
-      leds[step] = color;
-
-      step++;
-      if(step == RGB_size)
-      {
-        step = 0;
-        color = CRGB(random(0,255), random(0,255), random(0,255));
-        leds[0] = color;
-      }
-      else
-      {
-        leds[step] = color;
-      }
-
-      tLastStep = millis();
-
-      FastLED.show();
-      break;
-    case 2:
-      if(millis() - tLastStep < effect2Speed)
-        return;
-
-      leds[step] = hueColor;
-
-      step++;
-      if(step == RGB_size)
-      {
-        step = 0;
-        hueColor.hue = (hueColor.hue + 20) > 255 ? 0 : (hueColor.hue + 20) % 255;
-      }
-      tLastStep = millis();
-
-      FastLED.show();
-      break;
-    case 3:
-      if(millis() - tLastStep < effect3Speed)
-        return;
-
-      for(int i = 0; i < RGB_size; i++)
-        leds[i] = hueColor;
-
-      hueColor.hue = (hueColor.hue + 5) > 255 ? 0 : (hueColor.hue + 5) % 255;
-      
-      tLastStep = millis();
-
-      FastLED.show();
-      
-      break;
-
-  }
-}
 void loop() {
   
   if (!mqttClient.connected())
@@ -236,7 +165,6 @@ void loop() {
 
   if(lightingEffect)
     doLightingEffect(lightingEffect);
- 
 }
 
 ICACHE_RAM_ATTR void ISR_movementChanged()
@@ -384,7 +312,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
     else
     {
       lightingEffect = -1;
-      for(int i = 0; i < RGB_size; i++)
+      for(uint i = 0; i < RGB_size; i++)
         leds[i] = CRGB(0, 0, 0);
 
       FastLED.show();
@@ -394,7 +322,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "rgb-led")
   {
-    for(int i = 0; i < RGB_size; i++)
+    for(uint i = 0; i < RGB_size; i++)
       leds[i][devId] = doc["value"];
     
     FastLED.show();
@@ -410,5 +338,77 @@ void onMessage(String topic, byte *payload, unsigned int length)
   {
     bool retain = true; //broker will store the last message so when a new brower-client connect it will get this message and will know the current state
     mqttClient.publish(topic.c_str(), message.c_str(), retain);
+  }
+}
+
+void doLightingEffect(uint8 effect)
+{
+  static uint effect1Speed = 50;
+  static uint effect2Speed = 100;
+  static uint effect3Speed = 50;
+  static uint64 tLastStep = millis();
+  static uint step = 0;
+  static CRGB color = CRGB(255, 0, 0);
+  static CHSV hueColor = CHSV(0, 255, 150);
+  
+  switch(effect)
+  {
+    case 1:
+      if(millis() - tLastStep < effect1Speed)
+        return;
+
+      
+      for(int i = 0; i < RGB_size; i++)
+        leds[i] = CRGB(0, 0, 0);
+
+      leds[step] = color;
+
+      step++;
+      if(step == RGB_size)
+      {
+        step = 0;
+        color = CRGB(random(0,255), random(0,255), random(0,255));
+        leds[0] = color;
+      }
+      else
+      {
+        leds[step] = color;
+      }
+
+      tLastStep = millis();
+
+      FastLED.show();
+      break;
+    case 2:
+      if(millis() - tLastStep < effect2Speed)
+        return;
+
+      leds[step] = hueColor;
+
+      step++;
+      if(step == RGB_size)
+      {
+        step = 0;
+        hueColor.hue = (hueColor.hue + 20) > 255 ? 0 : (hueColor.hue + 20) % 255;
+      }
+      tLastStep = millis();
+
+      FastLED.show();
+      break;
+    case 3:
+      if(millis() - tLastStep < effect3Speed)
+        return;
+
+      for(int i = 0; i < RGB_size; i++)
+        leds[i] = hueColor;
+
+      hueColor.hue = (hueColor.hue + 5) > 255 ? 0 : (hueColor.hue + 5) % 255;
+      
+      tLastStep = millis();
+
+      FastLED.show();
+      
+      break;
+
   }
 }
