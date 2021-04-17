@@ -31,11 +31,18 @@ const uint8 MB_MS = MCP_GPIO_B0;
 const uint8 G_MS = MCP_GPIO_B1;
 
 //Connect garage door stepper motor to MCP
-AccelStepper garageDoor(AccelStepper::MotorInterfaceType::FULL4WIRE, 7,5,6,4, true, true);
-const uint8 G_door_s1 = MCP_GPIO_B7;
-const uint8 G_door_s2 = MCP_GPIO_B6;
-const uint8 G_door_s3 = MCP_GPIO_B5;
-const uint8 G_door_s4 = MCP_GPIO_B4;
+AccelStepper garageDoor(AccelStepper::MotorInterfaceType::FULL4WIRE, 0,2,1,3, true, true);
+const uint8 G_door_s1 = MCP_GPIO_A0;
+const uint8 G_door_s2 = MCP_GPIO_A1;
+const uint8 G_door_s3 = MCP_GPIO_A2;
+const uint8 G_door_s4 = MCP_GPIO_A3;
+
+//Connect roller blind to stepper motor
+AccelStepper rollerBlind(AccelStepper::MotorInterfaceType::FULL4WIRE, 7,5,6,4, true, true);
+const uint8 MB_rollerBlind_s1 = MCP_GPIO_B7;
+const uint8 MB_rollerBlind_s2 = MCP_GPIO_B6;
+const uint8 MB_rollerBlind_s3 = MCP_GPIO_B5;
+const uint8 MB_rollerBlind_s4 = MCP_GPIO_B4;
 
 //To know which sensor is for which room 
 std::map<uint8, String> pirToRoom = 
@@ -118,16 +125,16 @@ ServoData devIdToServo[] =
 
 const double stepperLimits[] = 
 {
-  -1, //LR sliding door
-  -1, //MB roller blind
-  -1, //GB roller blind
+  4, //LR sliding door
+  2.5, //MB roller blind
+  2.5, //GB roller blind
   2.5 //garage door
 };
 
 AccelStepper* devIdToStepper[] =
 {
   nullptr,
-  nullptr,
+  &rollerBlind,
   nullptr,
   &garageDoor
 };
@@ -172,6 +179,9 @@ void setup() {
   //Setup steppers
   garageDoor.setMCP(&mcp,G_door_s1, G_door_s3, G_door_s2, G_door_s4);
   garageDoor.setMaxSpeed(stepperMaxSpeed);
+
+  rollerBlind.setMCP(&mcp,MB_rollerBlind_s1, MB_rollerBlind_s3, MB_rollerBlind_s2, MB_rollerBlind_s4);
+  rollerBlind.setMaxSpeed(stepperMaxSpeed);
   
   //Setup servos
   MB_window_R.attach(MB_windowServo_R);
@@ -197,6 +207,7 @@ void loop() {
     doAlarm(0, alarmFrequency, alarmSpeed, alarm);
 
   garageDoor.runSpeedToPosition();
+  rollerBlind.runSpeedToPosition();
 }
 
 ICACHE_RAM_ATTR void ISR_movementChanged()
