@@ -71,6 +71,9 @@ const uint8 MB_windowServo_L = D7;
 //Connect alarm to the ESP
 const uint8 alarm = D5;
 
+//Connect dimmer lights to the ESP
+const uint8 MB_dimmer = D8;
+
 //mapping between devID(comes form browser-client) and physical pins
 //-1 means that its not controlled by this ESP but probably by an other one 
 const int8 lamps[] = 
@@ -93,6 +96,12 @@ const int8 switches[] =
   -1,     //main power --> everything except security related things
   -1,     //security system
   -1,     //silent alarm
+};
+
+const int8 dimmers[] =
+{
+  MB_dimmer,
+  -1, //guest bedroom dimmer lights
 };
 
 struct ServoData
@@ -167,6 +176,10 @@ void setup() {
   //Setup servos
   MB_window_R.attach(MB_windowServo_R);
   MB_window_L.attach(MB_windowServo_L);
+
+  //Setup dimmer lights
+  pinMode(MB_dimmer, OUTPUT);
+  digitalWrite(MB_dimmer, LOW);
 }
 
 
@@ -312,7 +325,12 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "dimmer")
   {
-    //TODO...
+    const int8 physicalPin = dimmers[devId];
+    if(physicalPin > -1)
+    {
+      const uint brightness = map(doc["value"], 0, 100, 0, 1023);
+      analogWrite(physicalPin, brightness);
+    }  
   }
   else if(devType == "servo")
   {
