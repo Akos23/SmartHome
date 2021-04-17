@@ -219,7 +219,7 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
 
   StaticJsonDocument<100> doc;
   doc["isOn"] = true;
-  doc["name"] = "A Bad Person";
+  doc["user"] = "A Bad Person";
   doc["room"] = pirToRoom[interruptPin];
 
   String message;

@@ -62,18 +62,18 @@ client.on("message", function (topic, message) {
   const data = JSON.parse(message.toString());
 
   const now = new Date();
-  let name;
+  let user;
   let action;
 
   //front door
   if (topic.toString() === "update/Hall/lock/0") {
     action =
-      data.name === "Unknown"
+      data.user === "Unknown"
         ? "access denied"
         : data.isLocked
         ? "closed front door"
         : "opened front door";
-    name = data.name;
+    user = data.user;
   }
 
   //security system
@@ -81,18 +81,18 @@ client.on("message", function (topic, message) {
     action = data.isOn
       ? "armed the security system"
       : "disarmed the security system";
-    name = data.name;
+    user = data.user;
   }
 
   //alarm
   if (topic.toString() === "update/alarm") {
     action = data.isOn ? "entered your home" : "switched off the alarm";
-    name = data.name;
+    user = data.user;
   }
 
   //construct the new record
   const record = {
-    name: name,
+    user: user,
     action: action,
     time: now.getTime(),
   };

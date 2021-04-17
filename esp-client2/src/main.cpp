@@ -206,7 +206,7 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
 
   StaticJsonDocument<100> doc;
   doc["isOn"] = true;
-  doc["name"] = "A Bad Person";
+  doc["user"] = "A Bad Person";
   doc["room"] = pirToRoom[interruptPin];
 
   String message;
@@ -246,12 +246,12 @@ void checkForRFIDCard()
   if(users.find(key)!= users.end())
   {
     isDoorOpen = !isDoorOpen;
-    doc["name"] = users[key];
+    doc["user"] = users[key];
     doc["isLocked"] = isDoorOpen;
   }
   else
   {
-    doc["name"] = "Unknown";
+    doc["user"] = "Unknown";
     doc["isLocked"] = isDoorOpen;
   }
 
@@ -275,8 +275,6 @@ void onMessage(String topic, byte *payload, unsigned int length)
     return;
   }
 
-  //const char* name = doc["name"]; //Who sent the message?
-  
   if(topic == "update/alarm")
   {
     isAlarmOn = doc["isOn"];
