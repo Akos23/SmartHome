@@ -342,7 +342,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
       return;
     
     //remap to the middle range because servos tend to jitter around their limits and we only need 90 degrees 
-    uint setPoint = servoData.isRightOpening ? 140 - newValue : 70 + newValue;
+    uint setPoint = servoData.isRightOpening ? 150 - newValue : 70 + newValue;
     
     servoData.servo->write(setPoint);
     
@@ -355,6 +355,10 @@ void onMessage(String topic, byte *payload, unsigned int length)
 
     //which device it is?
     AccelStepper* stepper = devIdToStepper[devId];
+
+    if(!stepper)
+      return;
+
     //Should we move forwards or backwards?
     int currentPos = stepper->currentPosition();
     int direction = newPosition - currentPos > 0 ? 1 : -1;
