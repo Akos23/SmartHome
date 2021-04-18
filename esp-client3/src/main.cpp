@@ -23,7 +23,11 @@
   MS: motion sensor
 */
 
-//Connect the devices to MCP
+///////////////////////////////////////////////////////////////////////////////////////////
+// Defining how the devices are connected
+//////////////////////////////////////////////////////////////////////////////////////////
+
+//Connect LEDs to MCP
 const uint8 G_lights = MCP_GPIO_A7;
 
 //Connect the motion sensors to MCP
@@ -44,36 +48,17 @@ const uint8 MB_rollerBlind_s2 = MCP_GPIO_B6;
 const uint8 MB_rollerBlind_s3 = MCP_GPIO_B5;
 const uint8 MB_rollerBlind_s4 = MCP_GPIO_B4;
 
-//To know which sensor is for which room 
-std::map<uint8, String> pirToRoom = 
-{
-  {MB_MS, "Main bedroom"},
-  {G_MS, "Garage"}
-};
-
-//Tell the MCP how to configure the pins the devices are connected to
-const std::vector<uint8> MCP_interruptPins = 
-  {
-    MB_MS,
-    G_MS,
-  };
-
-const std::vector<uint8> MCP_outputPins = 
-{
-  G_lights,
-};
-
 //Connect the MCP23017 to the ESP
 const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low input becuase it is pulled high internally
 const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object initialized with these 2 pins
 const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
 
 //Connect servos to the ESP
-Servo MB_window_R;
-const uint8 MB_windowServo_R = D6;
+Servo MB_RightWindow;
+const uint8 MB_RightWindowPin = D6;
 
-Servo MB_window_L;
-const uint8 MB_windowServo_L = D7;
+Servo MB_LeftWindow;
+const uint8 MB_LeftWindowPin = D7;
 
 //Connect alarm to the ESP
 const uint8 alarm = D5;
@@ -81,9 +66,15 @@ const uint8 alarm = D5;
 //Connect dimmer lights to the ESP
 const uint8 MB_dimmer = D8;
 
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 //mapping between devID(comes form browser-client) and physical pins
-//-1 means that its not controlled by this ESP but probably by an other one 
-const int8 lamps[] = 
+////////////////////////////////////////////////////////////////////////////////////////////
+
+//-1 or nullptr means that its not controlled by this ESP but probably by an other one 
+const int8 devIdToLamp[] = 
 {
   -1,//LR_standingLamp,
   -1,//K_UC_lights,
@@ -93,7 +84,7 @@ const int8 lamps[] =
   -1//B_lights
 };
 
-const int8 switches[] = 
+const int8 devIdToSwitch[] = 
 {
   -1,     //LR_TV,
   -1,     //MB_TV
@@ -105,7 +96,7 @@ const int8 switches[] =
   -1,     //silent alarm
 };
 
-const int8 dimmers[] =
+const int8 devIdToDimmer[] =
 {
   MB_dimmer,
   -1, //guest bedroom dimmer lights
@@ -119,27 +110,37 @@ struct ServoData
 
 ServoData devIdToServo[] = 
 {
-  {&MB_window_R, true},
-  {&MB_window_L, false}
+  {&MB_RightWindow, true},
+  {&MB_LeftWindow, false}
 };
 
-const double stepperLimits[] = 
+struct StepperData
 {
-  4, //LR sliding door
-  2.5, //MB roller blind
-  2.5, //GB roller blind
-  2.5 //garage door
+  AccelStepper* stepper;
+  double maxRevolutions;
 };
 
-AccelStepper* devIdToStepper[] =
+StepperData devIdToStepper[] =
 {
-  nullptr,
-  &rollerBlind,
-  nullptr,
-  &garageDoor
+  {nullptr, 2.5},
+  {&rollerBlind, 2.5},
+  {nullptr, 2.5},
+  {&garageDoor, 4}
 };
 
-//other constants
+//To know which sensor is for which room 
+std::map<uint8, String> pirToRoom = 
+{
+  {MB_MS, "Main bedroom"},
+  {G_MS, "Garage"}
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Global constants, variables and declarations
+///////////////////////////////////////////////////////////////////////////////////////
+
+//constants
 const uint alarmFrequency = 300; //Hz
 const uint alarmSpeed = 500; //s
 
@@ -153,25 +154,53 @@ ICACHE_RAM_ATTR void ISR_movementChanged();
 
 //global variables
 Adafruit_MCP23017 mcp;
+bool isMainPowerOn = false;
 bool isSecuritySystemOn = false;
 bool isSilentAlarmOn = false;
 bool isAlarmOn = false;
 bool isPowerSavingOn = false;
 bool isDoorOpen = false;
+int  LR_temperatureSetPoint = 23;
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Setup and initialization
+////////////////////////////////////////////////////////////////////////////
 
 void setup() {
   
+  //Connect to local network
+  setup_wifi();
+
   //Setup alarm
   pinMode(alarm, OUTPUT);
   digitalWrite(alarm, LOW);
   noTone(alarm);
 
-  //Connect to local network
-  setup_wifi();
-  
+  //Setup dimmer lights
+  pinMode(MB_dimmer, OUTPUT);
+  digitalWrite(MB_dimmer, LOW);
+
+  //Setup servos
+  MB_RightWindow.attach(MB_RightWindowPin);
+  MB_LeftWindow.attach(MB_LeftWindowPin);
+
   //Setup MCP with interrupt
   //On MCP: interrupt on change
   //On ESP: interrupt on Falling edge (active low)
+  //Tell the MCP how to configure the pins the devices are connected to
+  const std::vector<uint8> MCP_interruptPins = 
+    {
+      MB_MS,
+      G_MS,
+    };
+
+  const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
+  {
+    G_lights,
+  };
+
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
   attachInterrupt(digitalPinToInterrupt(MCP_INTB), ISR_movementChanged, FALLING);
@@ -182,16 +211,12 @@ void setup() {
 
   rollerBlind.setMCP(&mcp,MB_rollerBlind_s1, MB_rollerBlind_s3, MB_rollerBlind_s2, MB_rollerBlind_s4);
   rollerBlind.setMaxSpeed(stepperMaxSpeed);
-  
-  //Setup servos
-  MB_window_R.attach(MB_windowServo_R);
-  MB_window_L.attach(MB_windowServo_L);
-
-  //Setup dimmer lights
-  pinMode(MB_dimmer, OUTPUT);
-  digitalWrite(MB_dimmer, LOW);
 }
 
+
+///////////////////////////////////////////////////////////////////////////
+// Program Logic
+///////////////////////////////////////////////////////////////////////////
 
 void loop() {
   
@@ -199,6 +224,7 @@ void loop() {
   {
     reconnect();
   }
+
   //this function keeps the connection alive and calls the onMessage function whenever
   //a message arrives on one of the topics we subscribed to
   mqttClient.loop();
@@ -210,6 +236,8 @@ void loop() {
   rollerBlind.runSpeedToPosition();
 }
 
+//This interrupt is triggered whenever the motion sensors output changes:
+//It outputs a HIGH signal as long as it senses motion + 2seconds after the motion stopped
 ICACHE_RAM_ATTR void ISR_movementChanged()
 {
   //Let's see which pin caused the interrupt and read it's value
@@ -234,7 +262,7 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
   //String topic = "control/alarm"; --> in case of other ESPs
 
   //Since this ESP controls the alarm:
-  //If silent alarm is not enabled we set off the alarm
+  //Only if silent alarm is not enabled we set off the alarm
   if(!isSilentAlarmOn)
     isAlarmOn = true;
 
@@ -274,10 +302,6 @@ void onMessage(String topic, byte *payload, unsigned int length)
     if(!isAlarmOn)
       noTone(alarm);
 
-    //String deb("alarm: ");
-    //deb+= String(isSecuritySystemOn) + " silent: " + String(isSilentAlarmOn) + "new: " + String(isAlarmOn);
-    //mqttClient.publish("debug", deb.c_str());
-
     topic.replace("control", "update");
     bool retain = true;
     mqttClient.publish(topic.c_str(), message.c_str(), retain);
@@ -297,46 +321,56 @@ void onMessage(String topic, byte *payload, unsigned int length)
   //then we publish a message to the broker for the browser-clients 
   //so that they can update their states --> UI
 
-  //Test: controlling the standing lamp in the living room
   if(devType == "lamp")
   {
-    bool newValue = doc["isOn"];
-    const int8 physicalPin = lamps[devId];
+    const int8 physicalPin = devIdToLamp[devId];
     if(physicalPin > -1)
     {
-      mcp.digitalWrite(physicalPin, newValue); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
+      mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
       sendUpdate = true;
     }
   }
   else if(devType == "switch")
   {
-    if(devId == 6) //Security system
+    switch(devId)
     {
-      isSecuritySystemOn = doc["isOn"];
-      sendUpdate = true;
-    }
-
-    if(devId == 7) //Silent alarm
-    {
-      isSilentAlarmOn = doc["isOn"];
-      sendUpdate = true;
-    }
-
-    bool newValue = doc["isOn"];
-    const int8 physicalPin = switches[devId];
-    if(physicalPin > -1)
-    {
-      mcp.digitalWrite(physicalPin, newValue); //for now we assume that every switch is connected to the mcu and not directly to the ESP
-      sendUpdate = true;
+      case 4: //Logical switches
+        isPowerSavingOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      case 5:
+        isMainPowerOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      case 6:
+        isSecuritySystemOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      case 7:
+        isSilentAlarmOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      default:  //Physical switches
+        const int8 physicalPin = devIdToSwitch[devId];
+        if(physicalPin > -1)
+        {
+          mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every switch is connected to the mcu and not directly to the ESP
+          sendUpdate = true;
+        }
     }
   }
   else if(devType == "temp-setter")
   {
-    //TODO...
+    //For now it can be only set in the living room:
+    if(devId == 0)
+    {
+      LR_temperatureSetPoint = doc["value"];
+      sendUpdate = true;
+    }
   }
   else if(devType == "dimmer")
   {
-    const int8 physicalPin = dimmers[devId];
+    const int8 physicalPin = devIdToDimmer[devId];
     if(physicalPin > -1)
     {
       const uint brightness = map(doc["value"], 0, 100, 0, 1023);
@@ -345,13 +379,12 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "servo")
   {
-    uint newValue = doc["value"];
-
-    ServoData& servoData = devIdToServo[devId];
+    const ServoData& servoData = devIdToServo[devId];
 
     if(!servoData.servo)
       return;
     
+    uint newValue = doc["value"];
     //remap to the middle range because servos tend to jitter around their limits and we only need 90 degrees 
     uint setPoint = servoData.isRightOpening ? 150 - newValue : 70 + newValue;
     
@@ -361,14 +394,14 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "stepper")
   {
-    //depending on the device remap the set position
-    int newPosition = map(doc["value"], 0, 100, 0, stepperLimits[devId]*stepperStepsPerRotation);
-
     //which device it is?
-    AccelStepper* stepper = devIdToStepper[devId];
+    AccelStepper* stepper = devIdToStepper[devId].stepper;
 
     if(!stepper)
       return;
+
+    //depending on the device remap the set position
+    int newPosition = map(doc["value"], 0, 100, 0, devIdToStepper[devId].maxRevolutions*stepperStepsPerRotation);
 
     //Should we move forwards or backwards?
     int currentPos = stepper->currentPosition();
@@ -384,7 +417,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
     //TODO...
   }
 
-  //TODO: RGB, History(RFID), Wheather(sensors)
+  //Wheather(sensors)
 
   //////////////////////////////////////////////////////////////////////
 
