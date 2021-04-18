@@ -290,35 +290,27 @@ class NavigationMenu extends Component {
             },
             {
               id: 1,
-              devId: tempSetterID++, //1
-              name: "set temperature",
-              type: "temp-setter",
-              value: 23,
-              unit: "°C",
-            },
-            {
-              id: 2,
               devId: switchID++, //4
               name: "power saving mode",
               type: "switch",
               isOn: false,
             },
             {
-              id: 3,
+              id: 2,
               devId: switchID++, //5
               name: "main power",
               type: "switch",
               isOn: true,
             },
             {
-              id: 4,
+              id: 3,
               devId: switchID++, //6
               name: "security system",
               type: "switch",
               isOn: false,
             },
             {
-              id: 5,
+              id: 4,
               devId: switchID++, //7
               name: "silent alarm",
               type: "switch",
