@@ -27,8 +27,18 @@
 // Defining how the devices are connected
 //////////////////////////////////////////////////////////////////////////////////////////
 
+//Connect to analog multiplexer
+const uint8 lightSensor1 = 0;
+const uint8 lightSensor2 = 1;
+const uint8 tempSensor = 2;
+const uint8 rainSensor = 3;
+
 //Connect LEDs to MCP
 const uint8 G_lights = MCP_GPIO_A7;
+
+//Connect analog multiplexer to MCP
+const uint8 MUX_s0 = MCP_GPIO_A6;
+const uint8 MUX_s1 = MCP_GPIO_A5;
 
 //Connect the motion sensors to MCP
 const uint8 MB_MS = MCP_GPIO_B0;
@@ -148,9 +158,14 @@ const uint stepperStepsPerRotation = 2038;
 const uint stepperSpeed = 900;
 const uint stepperMaxSpeed = 1000;
 
+const uint lightSensorUpdateIntervall = 2000;
+const uint tempSensorUpdateIntervall = 3000;
+const uint rainSensorUpdateIntervall = 3000;
+
 //Forward declarations
 extern PubSubClient mqttClient;
 ICACHE_RAM_ATTR void ISR_movementChanged();
+void getSensorReadings();
 
 //global variables
 Adafruit_MCP23017 mcp;
@@ -183,6 +198,8 @@ void setup() {
   digitalWrite(MB_dimmer, LOW);
 
   //Setup servos
+  MB_RightWindow.write(150);
+  MB_LeftWindow.write(70);
   MB_RightWindow.attach(MB_RightWindowPin);
   MB_LeftWindow.attach(MB_LeftWindowPin);
 
@@ -199,6 +216,8 @@ void setup() {
   const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
   {
     G_lights,
+    MUX_s0,
+    MUX_s1
   };
 
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
@@ -234,6 +253,9 @@ void loop() {
 
   garageDoor.runSpeedToPosition();
   rollerBlind.runSpeedToPosition();
+
+  getSensorReadings();
+  
 }
 
 //This interrupt is triggered whenever the motion sensors output changes:
@@ -429,4 +451,39 @@ void onMessage(String topic, byte *payload, unsigned int length)
     bool retain = true; //broker will store the last message so when a new brower-client connect it will get this message and will know the current state
     mqttClient.publish(topic.c_str(), message.c_str(), retain);
   }
+}
+
+int readMUX(uint8 selected)
+{ 
+  if(selected > 3)
+    return 0;
+
+  mcp.digitalWrite(MUX_s0, 0b00000001 & selected); 
+  mcp.digitalWrite(MUX_s1, 0b00000010 & selected);
+  return analogRead(A0);
+}
+
+void getSensorReadings()
+{
+  static uint64 tLastLightReading = millis();
+  static uint64 tLastTempReading = millis();
+  static uint64 tLastRainReading = millis();
+
+  if(millis() - tLastLightReading > lightSensorUpdateIntervall)
+  {
+    mqttClient.publish("debug", (String("light sensor 1: ") + String(readMUX(lightSensor1))).c_str());
+    mqttClient.publish("debug", (String("light sensor 2: ") + String(readMUX(lightSensor2))).c_str());
+    tLastLightReading = millis();
+  }
+  if(millis() - tLastTempReading > tempSensorUpdateIntervall)
+  {
+    mqttClient.publish("debug", (String("temp sensor : ") + String(readMUX(tempSensor)*3300/1023/10)).c_str());
+    tLastTempReading = millis();
+  }
+  if(millis() - tLastRainReading > rainSensorUpdateIntervall)
+  {
+    mqttClient.publish("debug", String(readMUX(rainSensor)).c_str());
+    tLastRainReading = millis();
+  }
+
 }
