@@ -28,21 +28,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++, //0
+              devId: 0, //0
               name: "standing lamp",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: switchID++, //0
+              devId: 0, //0
               name: "TV",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: tempSensorID++, //0
+              devId: 0, //0
               name: "temperature",
               type: "temp-sensor",
               value: 23,
@@ -50,7 +50,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 3,
-              devId: tempSetterID++, //0
+              devId: 0, //0
               name: "set temperature",
               type: "temp-setter",
               value: 23,
@@ -58,7 +58,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 4,
-              devId: stepperID++, //0
+              devId: 0, //0
               name: "sliding door",
               type: "stepper",
               value: 0,
@@ -72,21 +72,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: dimmerID++, //0
+              devId: 0, //0
               name: "dimmer lights",
               type: "dimmer",
               value: 0,
             },
             {
               id: 1,
-              devId: switchID++, //1
+              devId: 0, //1
               name: "TV",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: stepperID++, //1
+              devId: 1, //1
               name: "roller blind",
               type: "stepper",
               value: 0,
@@ -94,7 +94,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 4,
-              devId: servoID++, //0
+              devId: 0, //0
               name: "right window",
               type: "servo",
               value: 0,
@@ -104,7 +104,7 @@ class NavigationMenu extends Component {
             },
             {
               id: 5,
-              devId: servoID++, //1
+              devId: 1, //1
               name: "left window",
               type: "servo",
               value: 0,
@@ -120,21 +120,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: dimmerID++, //1
+              devId: 1, //1
               name: "dimmer lights",
               type: "dimmer",
               value: 0,
             },
             {
               id: 1,
-              devId: switchID++, //2
+              devId: 2, //2
               name: "TV",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: stepperID++, //2
+              devId: 2, //2
               name: "roller blind",
               type: "stepper",
               value: 0,
@@ -148,21 +148,21 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++, //1
+              devId: 1, //1
               name: "under cabinet lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: lampID++, //2
+              devId: 2, //2
               name: "kitchen island lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 2,
-              devId: switchID++, //3
+              devId: 3, //3
               name: "exhaust fan",
               type: "switch",
               isOn: false,
@@ -175,14 +175,14 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++, //3
+              devId: 3, //3
               name: "lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: lockID++, //0
+              devId: 0, //0
               name: "front door",
               type: "lock",
               isLocked: false,
@@ -195,14 +195,14 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++, //4
+              devId: 4, //4
               name: "lights",
               type: "lamp",
               isOn: false,
             },
             {
               id: 1,
-              devId: stepperID++, //3
+              devId: 3, //3
               name: "garage door",
               type: "stepper",
               value: 0,
@@ -216,7 +216,7 @@ class NavigationMenu extends Component {
           devices: [
             {
               id: 0,
-              devId: lampID++, //5
+              devId: 5, //5
               name: "lights",
               type: "lamp",
               isOn: false,
@@ -290,28 +290,28 @@ class NavigationMenu extends Component {
             },
             {
               id: 1,
-              devId: switchID++, //4
+              devId: 4, //4
               name: "power saving mode",
               type: "switch",
               isOn: false,
             },
             {
               id: 2,
-              devId: switchID++, //5
+              devId: 5, //5
               name: "main power",
               type: "switch",
               isOn: true,
             },
             {
               id: 3,
-              devId: switchID++, //6
+              devId: 6, //6
               name: "security system",
               type: "switch",
               isOn: false,
             },
             {
               id: 4,
-              devId: switchID++, //7
+              devId: 7, //7
               name: "silent alarm",
               type: "switch",
               isOn: false,
