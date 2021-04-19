@@ -469,21 +469,43 @@ void getSensorReadings()
   static uint64 tLastTempReading = millis();
   static uint64 tLastRainReading = millis();
 
+  
+
   if(millis() - tLastLightReading > lightSensorUpdateIntervall)
   {
-    mqttClient.publish("debug", (String("light sensor 1: ") + String(readMUX(lightSensor1))).c_str());
-    mqttClient.publish("debug", (String("light sensor 2: ") + String(readMUX(lightSensor2))).c_str());
+    uint maxBrightness = readMUX(lightSensor1);
+    maxBrightness = readMUX(lightSensor2) > maxBrightness ? readMUX(lightSensor2) : maxBrightness;
+
+    String message;
+    StaticJsonDocument<100> doc; 
+    doc["brightness"] = maxBrightness;
+    serializeJson(doc, message);
+
+    mqttClient.publish("update/Wheather/brightness", message.c_str());
     tLastLightReading = millis();
   }
   if(millis() - tLastTempReading > tempSensorUpdateIntervall)
   {
-    mqttClient.publish("debug", (String("temp sensor : ") + String(readMUX(tempSensor)*3300/1023/10)).c_str());
+    uint degrees = readMUX(tempSensor)*3300/1023/10;
+
+    String message;
+    StaticJsonDocument<100> doc;
+    doc["degrees"] = degrees;
+    serializeJson(doc, message);
+
+    mqttClient.publish("update/Wheather/degrees", message.c_str());
     tLastTempReading = millis();
   }
   if(millis() - tLastRainReading > rainSensorUpdateIntervall)
   {
-    mqttClient.publish("debug", String(readMUX(rainSensor)).c_str());
+    uint rain = readMUX(rainSensor);
+
+    String message;
+    StaticJsonDocument<100> doc;
+    doc["rain"] = map(rain, 0, 1023, 1023, 0);
+    serializeJson(doc, message);
+
+    mqttClient.publish("update/Wheather/rain", message.c_str());
     tLastRainReading = millis();
   }
-
 }

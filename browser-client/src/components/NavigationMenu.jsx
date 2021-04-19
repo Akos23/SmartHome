@@ -362,6 +362,25 @@ class NavigationMenu extends Component {
       return;
     }
 
+    if (subtopics[1] === "Wheather") {
+      //Copy the cards array
+      const cards = [...this.state.cards];
+
+      //Copy the wheather card
+      const card = this.state.cards.find((card) => card.title === "Wheather");
+      const index = this.state.cards.indexOf(card);
+      cards[index] = { ...this.state.cards[index] };
+
+      //Copy measurements and merge it with new data
+      cards[index].measurments = {
+        ...this.state.cards[index].measurments,
+        ...data,
+      };
+
+      this.setState({ cards });
+      return;
+    }
+
     //From here we know we should have this format:
     //  update/card/devType/devId
     //  control/card/dimmer/devId

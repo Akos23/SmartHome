@@ -5,9 +5,10 @@ import Slider from "./Slider";
 import LockButton from "./LockButton";
 import StepperButton from "./StepperButton";
 import clearSunny from "./icons/wheather/day_clear.svg";
-import partialCloud from "./icons/wheather/day_partial_cloud.svg";
+import littleCloudy from "./icons/wheather/day_partial_cloud.svg";
 import cloudy from "./icons/wheather/cloudy.svg";
 import rainy from "./icons/wheather/day_rain.svg";
+import veryRainy from "./icons/wheather/day_rain_thunder.svg";
 import HistorViewer from "./HistoryViewer";
 import LightEffectSelector from "./LightEffectSelector";
 
@@ -108,6 +109,16 @@ class Card extends Component {
     }
     return component;
   };
+  getWheatherImage = (brightness, rain) => {
+    let img;
+    if (rain / 100 < 0.5) {
+      if (brightness < 500) img = cloudy;
+      else if (brightness < 750) img = littleCloudy;
+      else img = clearSunny;
+    } else if (rain / 100 < 5) img = rainy;
+    else img = veryRainy;
+    return img;
+  };
 
   renderBody = () => {
     let cardBody;
@@ -120,13 +131,18 @@ class Card extends Component {
             <div>
               <p className="temperaturValue">{degrees}&#8451;</p>
             </div>
-            <img className="wheatherImage" src={rainy} />
+            <img
+              className="wheatherImage"
+              src={this.getWheatherImage(brightness, rain)}
+            />
             <p className="wheatherLabel brightness">
               {" "}
-              brightness : {brightness} %
+              brightness : {brightness * 100} lux
             </p>
             <p className="wheatherLabel humidity">humidity : {humidity} % </p>
-            <p className="wheatherLabel rain">precipitation : {rain} mm</p>
+            <p className="wheatherLabel rain">
+              precipitation : {(rain / 100).toFixed(2)} mm
+            </p>
             <p className="wheatherLabel wind">wind : {wind} km/h</p>
           </React.Fragment>
         );
