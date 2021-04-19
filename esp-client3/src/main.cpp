@@ -36,13 +36,13 @@ const uint8 lightSensor5 = 4;
 const uint8 tempSensor = 5;
 const uint8 rainSensor = 6;
 
-//Connect LEDs to MCP
-const uint8 G_lights = MCP_GPIO_A7;
-
 //Connect analog multiplexer to MCP
 const uint8 MUX_s0 = MCP_GPIO_A6;
 const uint8 MUX_s1 = MCP_GPIO_A5;
 const uint8 MUX_s2 = MCP_GPIO_A4;
+
+//Connect LEDs to MCP
+const uint8 G_lights = MCP_GPIO_A7;
 
 //Connect the motion sensors to MCP
 const uint8 MB_MS = MCP_GPIO_B0;
@@ -93,9 +93,10 @@ const int8 devIdToLamp[] =
   -1,//LR_standingLamp,
   -1,//K_UC_lights,
   -1,//K_KI_lights,
-  -1,//H_lights,
+  -1,//H_lights1,
   G_lights,//G_lights,
   -1//B_lights
+  -1,//H_lights2,
 };
 
 const int8 devIdToSwitch[] = 
@@ -136,15 +137,17 @@ struct StepperData
 
 StepperData devIdToStepper[] =
 {
-  {nullptr, 2.5},
-  {&rollerBlind, 2.5},
-  {nullptr, 2.5},
-  {&garageDoor, 4}
+  {nullptr, 4}, //sliding door
+  {&rollerBlind, 2.5},  //MB
+  {nullptr, 2.5}, //GB
+  {&garageDoor, 3}  //garage door
 };
 
 //To know which sensor is for which room 
 std::map<uint8, String> pirToRoom = 
 {
+  //{GB_MS, "Guest bedroom"},
+  //{B_MS, "Bathroom"},
   {MB_MS, "Main bedroom"},
   {G_MS, "Garage"}
 };
@@ -161,6 +164,8 @@ const uint alarmSpeed = 500; //s
 const uint stepperStepsPerRotation = 2038;
 const uint stepperSpeed = 900;
 const uint stepperMaxSpeed = 1000;
+
+//const uint64 RFID_pollingIntervall = 2000;
 
 const uint lightSensorUpdateIntervall = 2000;
 const uint tempSensorUpdateIntervall = 3000;

@@ -23,38 +23,32 @@
   MS: motion sensor
 */
 
-//Connect the devices to MCP
+///////////////////////////////////////////////////////////////////////////////////////////
+// Defining how the devices are connected
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+//Connect to analog multiplexer
+//Not used...
+
+//Connect analog multiplexer to MCP
+//Not used...
+
+//Connect the LEDs to MCP
 const uint8 B_lights = MCP_GPIO_A7;
+const uint8 H_lights1 = MCP_GPIO_A6;
+const uint8 H_lights2 = MCP_GPIO_A5;
 
 //Connect the motion sensors to MCP
 const uint8 B_MS = MCP_GPIO_B0;
 const uint8 GB_MS = MCP_GPIO_B1;
 
-//Connect rooler blind stepper motor to MCP
+//Connect roller blind stepper motor to MCP
 AccelStepper rollerBlind(AccelStepper::MotorInterfaceType::FULL4WIRE, 7,5,6,4, true, true);
 const uint8 GB_rollerBlind_s1 = MCP_GPIO_B7;
 const uint8 GB_rollerBlind_s2 = MCP_GPIO_B6;
 const uint8 GB_rollerBlind_s3 = MCP_GPIO_B5;
 const uint8 GB_rollerBlind_s4 = MCP_GPIO_B4;
-
-//To know which sensor is for which room 
-std::map<uint8, String> pirToRoom = 
-{
-  {B_MS, "Bathroom"},
-  {GB_MS, "Guest bedroom"}
-};
-
-//Tell the MCP how to configure the pins the devices are connected to
-const std::vector<uint8> MCP_interruptPins = 
-  {
-    B_MS,
-    GB_MS
-  };
-
-const std::vector<uint8> MCP_outputPins = 
-{
-  B_lights,
-};
 
 //Connect the MCP23017 to the ESP
 const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low input becuase it is pulled high internally
@@ -62,36 +56,37 @@ const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object
 const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
 
 //Connect servos to the ESP
-Servo MB_window;
-const uint8 MB_windowServo = D6;
+Servo H_frontDoorLock;
+const uint8 H_frontDoorLockPin = D6;
 
 //Conncect the RFID reader to the ESP
 const uint8 RFID_RST = D0;
 const uint8 RFID_SDA = D8; //SS
 MFRC522 mfrc522(RFID_SDA, RFID_RST);
 
-//Authetnticated RFID tags
-std::map<String,String> users = 
-{
-  {"01 02 03 04","Ákos Dabasi"},
-  {"23 50 D0 18","Ildikó Orawetz"},
-  {"B3 7A D0 18","László Dabasi"},
-  {"B9 96 75 B3","Balázs Dabasi"}
-};
+//Connect dimmer lights to the ESP
+const uint8 GB_dimmer = 1; //TX
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 //mapping between devID(comes form browser-client) and physical pins
-//-1 means that its not controlled by this ESP but probably by an other one 
-const int8 lamps[] = 
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//-1 or nullptr means that its not controlled by this ESP but probably by an other one 
+const int8 devIdToLamp[] = 
 {
   -1,//LR_standingLamp,
   -1,//K_UC_lights,
   -1,//K_KI_lights,
-  -1,//H_lights,
+  H_lights1,
   -1,//G_lights,
-  B_lights
+  B_lights,
+  H_lights2,
 };
 
-const int8 switches[] = 
+const int8 devIdToSwitch[] = 
 {
   -1,     //LR_TV,
   -1,     //MB_TV
@@ -103,68 +98,145 @@ const int8 switches[] =
   -1,     //silent alarm
 };
 
-Servo* devIdToServo[] = 
+const int8 devIdToDimmer[] =
 {
-  &MB_window,
-  nullptr, //GB window
-}; 
-
-const double stepperLimits[] = 
-{
-  4, //LR sliding door
-  2.5, //MB roller blind
-  2.5, //GB roller blind
-  2.5 //garage door
+  -1,//MB_dimmer,
+  GB_dimmer
 };
 
-AccelStepper* devIdToStepper[] =
+// Not used...
+struct ServoData
 {
-  nullptr,
-  nullptr,
-  &rollerBlind,
-  nullptr,
+  Servo* servo;
+  bool isRightOpening;
 };
 
-//other constants
-const uint64 RFID_pollingIntervall = 2000;
+ServoData devIdToServo[] = 
+{
+  {nullptr, true},
+  {nullptr, false}
+};
+
+struct StepperData
+{
+  AccelStepper* stepper;
+  double maxRevolutions;
+};
+
+StepperData devIdToStepper[] =
+{
+  {nullptr, 4}, //sliding door
+  {nullptr, 2.5},  //MB
+  {&rollerBlind, 2.5}, //GB
+  {nullptr, 3}  //garage door
+};
+
+//To know which sensor is for which room 
+std::map<uint8, String> pirToRoom = 
+{
+  {GB_MS, "Guest bedroom"},
+  {B_MS, "Bathroom"},
+  //{MB_MS, "Main bedroom"},
+  //{G_MS, "Garage"}
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+// Global constants, variables and declarations
+///////////////////////////////////////////////////////////////////////////////////////
+
+//constants
+//const uint alarmFrequency = 300; //Hz
+//const uint alarmSpeed = 500; //s
 
 const uint stepperStepsPerRotation = 2038;
 const uint stepperSpeed = 900;
 const uint stepperMaxSpeed = 1000;
 
+const uint64 RFID_pollingIntervall = 2000;
+
+//const uint lightSensorUpdateIntervall = 2000;
+//const uint tempSensorUpdateIntervall = 3000;
+//const uint rainSensorUpdateIntervall = 3000;
+
+//Authetnticated RFID tags
+std::map<String,String> users = 
+{
+  {"01 02 03 04","Ákos Dabasi"},
+  {"23 50 D0 18","Ildikó Orawetz"},
+  {"B3 7A D0 18","László Dabasi"},
+  {"B9 96 75 B3","Balázs Dabasi"}
+};
+
 //Forward declarations
 extern PubSubClient mqttClient;
 ICACHE_RAM_ATTR void ISR_movementChanged();
+void getSensorReadings();
 void checkForRFIDCard();
 
 //global variables
 Adafruit_MCP23017 mcp;
+bool isMainPowerOn = false;
 bool isSecuritySystemOn = false;
+bool isSilentAlarmOn = false;
 bool isAlarmOn = false;
+bool isPowerSavingOn = false;
 bool isDoorOpen = false;
+int  LR_temperatureSetPoint = 23;
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Setup and initialization
+////////////////////////////////////////////////////////////////////////////
 
 void setup() {
   //Connect to local network
   setup_wifi();
   
+  //Setup dimmer lights
+  pinMode(GB_dimmer, FUNCTION_3); //changes TX to regular GPIO pin
+  pinMode(GB_dimmer, OUTPUT);
+  digitalWrite(GB_dimmer, LOW);
+
+  //Setup servos
+  H_frontDoorLock.write(70);
+  H_frontDoorLock.attach(H_frontDoorLockPin);
+  
   //Setup MCP with interrupt
   //On MCP: interrupt on change
   //On ESP: interrupt on Falling edge (active low)
+   //Tell the MCP how to configure the pins the devices are connected to
+  const std::vector<uint8> MCP_interruptPins = 
+  {
+    GB_MS,
+    B_MS,
+  };
+
+  const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
+  {
+    B_lights,
+    H_lights1,
+    H_lights2,
+  };
+
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
   attachInterrupt(digitalPinToInterrupt(MCP_INTB), ISR_movementChanged, FALLING);
   
-  //Setup RFID reader
-  SPI.begin();        
-  mfrc522.PCD_Init(); 
-
   //Setup steppers
   rollerBlind.setMCP(&mcp,GB_rollerBlind_s1, GB_rollerBlind_s3, GB_rollerBlind_s2, GB_rollerBlind_s4);
   rollerBlind.setMaxSpeed(stepperMaxSpeed);
 
-  //Setup servos
-  MB_window.attach(MB_windowServo);
+  //Setup RFID reader
+  SPI.begin();        
+  mfrc522.PCD_Init(); 
 }
+
+
+///////////////////////////////////////////////////////////////////////////
+// Program Logic
+///////////////////////////////////////////////////////////////////////////
 
 void loop() {
   
@@ -181,6 +253,8 @@ void loop() {
   rollerBlind.runSpeedToPosition();
 }
 
+//This interrupt is triggered whenever the motion sensors output changes:
+//It outputs a HIGH signal as long as it senses motion + 2seconds after the motion stopped
 ICACHE_RAM_ATTR void ISR_movementChanged()
 {
   //Let's see which pin caused the interrupt and read it's value
@@ -302,55 +376,85 @@ void onMessage(String topic, byte *payload, unsigned int length)
   //Test: controlling the standing lamp in the living room
   if(devType == "lamp")
   {
-    bool newValue = doc["isOn"];
-    const int8 physicalPin = lamps[devId];
+     const int8 physicalPin = devIdToLamp[devId];
     if(physicalPin > -1)
     {
-      mcp.digitalWrite(physicalPin, newValue); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
+      mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
       sendUpdate = true;
     }
   }
   else if(devType == "switch")
   {
-    bool newValue = doc["isOn"];
-    const int8 physicalPin = switches[devId];
-    if(physicalPin > -1)
+    switch(devId)
     {
-      mcp.digitalWrite(physicalPin, newValue); //for now we assume that every switch is connected to the mcu and not directly to the ESP
-      sendUpdate = true;
+      case 4: //Logical switches
+        isPowerSavingOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      case 5:
+        isMainPowerOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      case 6:
+        isSecuritySystemOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      case 7:
+        isSilentAlarmOn = doc["isOn"];
+        sendUpdate = true;
+        break;
+      default:  //Physical switches
+        const int8 physicalPin = devIdToSwitch[devId];
+        if(physicalPin > -1)
+        {
+          mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every switch is connected to the mcu and not directly to the ESP
+          sendUpdate = true;
+        }
     }
   }
   else if(devType == "temp-setter")
   {
-    //TODO...
+    //For now it can be only set in the living room:
+    if(devId == 0)
+    {
+      LR_temperatureSetPoint = doc["value"];
+      sendUpdate = true;
+    }
   }
   else if(devType == "dimmer")
   {
-    //TODO...
+    const int8 physicalPin = devIdToDimmer[devId];
+    if(physicalPin > -1)
+    {
+      const uint brightness = map(doc["value"], 0, 100, 0, 1023);
+      analogWrite(physicalPin, brightness);
+    }  
   }
   else if(devType == "servo")
   {
-    uint newValue = doc["value"];
+    const ServoData& servoData = devIdToServo[devId];
 
-    Servo* servo = devIdToServo[devId];
-
-    if(!servo)
+    if(!servoData.servo)
       return;
     
-    uint setPoint = map(newValue,0,100,0,90);
-    servo->write(setPoint);
+    uint newValue = doc["value"];
+    //remap to the middle range because servos tend to jitter around their limits and we only need 90 degrees 
+    uint setPoint = servoData.isRightOpening ? 150 - newValue : 70 + newValue;
+    
+    servoData.servo->write(setPoint);
+    
+    sendUpdate = true;
   }
   else if(devType == "stepper")
   {
     //which device it is?
-    AccelStepper* stepper = devIdToStepper[devId];
+    AccelStepper* stepper = devIdToStepper[devId].stepper;
 
-    //Is it controlled by this ESP?
     if(!stepper)
       return;
 
     //depending on the device remap the set position
-    int newPosition = map(doc["value"], 0, 100, 0, stepperLimits[devId]*stepperStepsPerRotation);
+    int newPosition = map(doc["value"], 0, 100, 0, devIdToStepper[devId].maxRevolutions*stepperStepsPerRotation);
 
     //Should we move forwards or backwards?
     int currentPos = stepper->currentPosition();
@@ -363,10 +467,8 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "lock")
   {
-    //TODO...
+    H_frontDoorLock.write(doc["isLocked"] ? 70 : 120);
   }
-
-  //TODO: RGB, History(RFID), Wheather(sensors)
 
   //////////////////////////////////////////////////////////////////////
 

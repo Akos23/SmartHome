@@ -176,12 +176,19 @@ class NavigationMenu extends Component {
             {
               id: 0,
               devId: 3, //3
-              name: "lights",
+              name: "lamp 1",
               type: "lamp",
               isOn: false,
             },
             {
-              id: 1,
+              id: 2,
+              devId: 6, //6
+              name: "lamp 2",
+              type: "lamp",
+              isOn: false,
+            },
+            {
+              id: 3,
               devId: 0, //0
               name: "front door",
               type: "lock",
