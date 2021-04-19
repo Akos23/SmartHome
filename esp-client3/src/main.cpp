@@ -28,10 +28,13 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 //Connect to analog multiplexer
-const uint8 lightSensor1 = 0;
-const uint8 lightSensor2 = 1;
-const uint8 tempSensor = 2;
-const uint8 rainSensor = 3;
+const uint8 lightSensor1 = 0; 
+const uint8 lightSensor2 = 1; 
+const uint8 lightSensor3 = 2; 
+const uint8 lightSensor4 = 3;
+const uint8 lightSensor5 = 4;
+const uint8 tempSensor = 5;
+const uint8 rainSensor = 6;
 
 //Connect LEDs to MCP
 const uint8 G_lights = MCP_GPIO_A7;
@@ -39,6 +42,7 @@ const uint8 G_lights = MCP_GPIO_A7;
 //Connect analog multiplexer to MCP
 const uint8 MUX_s0 = MCP_GPIO_A6;
 const uint8 MUX_s1 = MCP_GPIO_A5;
+const uint8 MUX_s2 = MCP_GPIO_A4;
 
 //Connect the motion sensors to MCP
 const uint8 MB_MS = MCP_GPIO_B0;
@@ -217,7 +221,8 @@ void setup() {
   {
     G_lights,
     MUX_s0,
-    MUX_s1
+    MUX_s1,
+    MUX_s2
   };
 
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
@@ -460,6 +465,7 @@ int readMUX(uint8 selected)
 
   mcp.digitalWrite(MUX_s0, 0b00000001 & selected); 
   mcp.digitalWrite(MUX_s1, 0b00000010 & selected);
+  mcp.digitalWrite(MUX_s2, 0b00000100 & selected);
   return analogRead(A0);
 }
 
@@ -473,8 +479,12 @@ void getSensorReadings()
 
   if(millis() - tLastLightReading > lightSensorUpdateIntervall)
   {
+    //For now we are only intrested in the max brightness you can get and not where it comes from
     uint maxBrightness = readMUX(lightSensor1);
     maxBrightness = readMUX(lightSensor2) > maxBrightness ? readMUX(lightSensor2) : maxBrightness;
+    maxBrightness = readMUX(lightSensor3) > maxBrightness ? readMUX(lightSensor3) : maxBrightness;
+    maxBrightness = readMUX(lightSensor4) > maxBrightness ? readMUX(lightSensor4) : maxBrightness;
+    maxBrightness = readMUX(lightSensor5) > maxBrightness ? readMUX(lightSensor5) : maxBrightness;
 
     String message;
     StaticJsonDocument<100> doc; 
