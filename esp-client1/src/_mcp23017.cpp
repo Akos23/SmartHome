@@ -4,7 +4,7 @@
 
 void clear_mcp_interrupts(Adafruit_MCP23017& mcp, const std::vector<uint8>& interruptPins)
 {
-    for (int i = 0; i < interruptPins.size(); i++)
+    for (uint i = 0; i < interruptPins.size(); i++)
     {
         mcp.digitalRead(interruptPins[i]);
     }
@@ -17,7 +17,7 @@ void setup_mcp(Adafruit_MCP23017& mcp, const std::vector<uint8>& interruptPins, 
     mcp.setupInterrupts(true, false, LOW);
 
     //Trigger an interrupt on input value changes
-    for (int i = 0; i < interruptPins.size(); i++)
+    for (uint i = 0; i < interruptPins.size(); i++)
     {
         uint8 pin = interruptPins[i];
         mcp.pinMode(pin, INPUT);
@@ -27,7 +27,7 @@ void setup_mcp(Adafruit_MCP23017& mcp, const std::vector<uint8>& interruptPins, 
     clear_mcp_interrupts(mcp, interruptPins);
 
     //Set up output pins
-    for (int i = 0; i < outputPins.size(); i++)
+    for (uint i = 0; i < outputPins.size(); i++)
     {
         uint8 pin = outputPins[i];
         mcp.pinMode(pin, OUTPUT);

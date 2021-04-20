@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <Servo.h>
 #include <map>
 #include "_wifi.h"
 #include "_mqtt.h"
 #include "_mcp23017.h"
 #include "_alarm.h"
 #include "_AccelStepper.h"
-#include "Servo.h"
 
 ///////////////////////////////////////////////////////////////////////
 //-----> ESP3: Takes care of the Main bedroom and the Garage  <-----//
@@ -150,6 +150,8 @@ std::map<uint8, String> pirToRoom =
   //{B_MS, "Bathroom"},
   {MB_MS, "Main bedroom"},
   {G_MS, "Garage"}
+  //{K_MS, "Kitchen"},
+  //{LR_MS, "Living room"}
 };
 
 
@@ -486,10 +488,10 @@ void getSensorReadings()
   {
     //For now we are only intrested in the max brightness you can get and not where it comes from
     uint maxBrightness = readMUX(lightSensor1);
-    maxBrightness = readMUX(lightSensor2) > maxBrightness ? readMUX(lightSensor2) : maxBrightness;
-    maxBrightness = readMUX(lightSensor3) > maxBrightness ? readMUX(lightSensor3) : maxBrightness;
-    maxBrightness = readMUX(lightSensor4) > maxBrightness ? readMUX(lightSensor4) : maxBrightness;
-    maxBrightness = readMUX(lightSensor5) > maxBrightness ? readMUX(lightSensor5) : maxBrightness;
+    maxBrightness = (uint)readMUX(lightSensor2) > maxBrightness ? readMUX(lightSensor2) : maxBrightness;
+    maxBrightness = (uint)readMUX(lightSensor3) > maxBrightness ? readMUX(lightSensor3) : maxBrightness;
+    maxBrightness = (uint)readMUX(lightSensor4) > maxBrightness ? readMUX(lightSensor4) : maxBrightness;
+    maxBrightness = (uint)readMUX(lightSensor5) > maxBrightness ? readMUX(lightSensor5) : maxBrightness;
 
     String message;
     StaticJsonDocument<100> doc; 

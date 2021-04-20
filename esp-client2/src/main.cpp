@@ -1,12 +1,12 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <MFRC522.h>
+#include <Servo.h>
 #include <map>
 #include "_wifi.h"
 #include "_mqtt.h"
 #include "_mcp23017.h"
 #include "_AccelStepper.h"
-#include "Servo.h"
 
 //////////////////////////////////////////////////////////////////////////////////
 //-----> ESP2: Takes care of the Guest bedroom the Bathroom and the Hall <-----//
@@ -138,6 +138,8 @@ std::map<uint8, String> pirToRoom =
   {B_MS, "Bathroom"},
   //{MB_MS, "Main bedroom"},
   //{G_MS, "Garage"}
+  //{K_MS, "Kitchen"},
+  //{LR_MS, "Living room"}
 };
 
 
@@ -171,8 +173,10 @@ std::map<String,String> users =
 //Forward declarations
 extern PubSubClient mqttClient;
 ICACHE_RAM_ATTR void ISR_movementChanged();
-void getSensorReadings();
+//void getSensorReadings();
 void checkForRFIDCard();
+//void doLightingEffect(uint8 effect);
+
 
 //global variables
 Adafruit_MCP23017 mcp;
@@ -183,7 +187,7 @@ bool isAlarmOn = false;
 bool isPowerSavingOn = false;
 bool isDoorOpen = false;
 int  LR_temperatureSetPoint = 23;
-
+//uint8 lightingEffect = 0;
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -376,7 +380,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
   //Test: controlling the standing lamp in the living room
   if(devType == "lamp")
   {
-     const int8 physicalPin = devIdToLamp[devId];
+    const int8 physicalPin = devIdToLamp[devId];
     if(physicalPin > -1)
     {
       mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
