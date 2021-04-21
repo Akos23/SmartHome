@@ -451,8 +451,6 @@ void onMessage(String topic, byte *payload, unsigned int length)
     //TODO...
   }
 
-  //Wheather(sensors)
-
   //////////////////////////////////////////////////////////////////////
 
   topic.replace("control", "update");
@@ -467,7 +465,7 @@ void onMessage(String topic, byte *payload, unsigned int length)
 
 int readMUX(uint8 selected)
 { 
-  if(selected > 3)
+  if(selected > 7)
     return 0;
 
   mcp.digitalWrite(MUX_s0, 0b00000001 & selected); 
