@@ -196,13 +196,13 @@ int  LR_temperatureSetPoint = 23;
 
 void setup() {
   
-  //Connect to local network
-  setup_wifi();
-
   //Setup alarm
   pinMode(alarm, OUTPUT);
   digitalWrite(alarm, LOW);
   noTone(alarm);
+
+  //Connect to local network
+  setup_wifi();
 
   //Setup dimmer lights
   pinMode(MB_dimmer, OUTPUT);
