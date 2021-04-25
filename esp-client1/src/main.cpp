@@ -36,7 +36,7 @@
 //Connect analog multiplexer to MCP
 //Not used...
 
-//Connect the LEDs to MCP
+/*//Connect the LEDs to MCP
 const uint8 LR_standingLamp = MCP_GPIO_A7;
 const uint8 K_UC_lights = MCP_GPIO_A6;
 const uint8 K_KI_ligths = MCP_GPIO_A5;
@@ -55,12 +55,21 @@ const uint8 LR_door_s4 = MCP_GPIO_B4;
 //Connect the MCP23017 to the ESP
 const uint8 MCP_INTB = D4; //GPIO2 --> this can only function as an active low input becuase it is pulled high internally
 const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object initialized with these 2 pins
-const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
+const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins*/
 
 //Connect WS2812B RGB strip to ESP
 const uint RGB_size = 8;
 CRGB leds[RGB_size];
 const uint8 RGB_pin = D5;
+
+//Connect the LEDs to ESP
+const uint8 LR_standingLamp = D8;
+const uint8 K_UC_lights = D6;
+const uint8 K_KI_ligths = D7;
+
+//Connect the motion sensors to ESP
+const uint8 K_MS = D1;
+const uint8 LR_MS = D2;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //mapping between devID(comes form browser-client) and physical pins
@@ -118,7 +127,7 @@ struct StepperData
 
 StepperData devIdToStepper[] =
 {
-  {&slidingDoor, 4}, //sliding door
+  {nullptr/*&slidingDoor*/, 4}, //sliding door
   {nullptr, 2.5},  //MB
   {nullptr, 2.5}, //GB
   {nullptr, 3}  //garage door
@@ -163,7 +172,7 @@ void doLightingEffect(uint8 effect);
 
 
 //global variables
-Adafruit_MCP23017 mcp;
+//Adafruit_MCP23017 mcp;
 bool isMainPowerOn = false;
 bool isSecuritySystemOn = false;
 bool isSilentAlarmOn = false;
@@ -187,7 +196,7 @@ void setup() {
   //On MCP: interrupt on change
   //On ESP: interrupt on Falling edge (active low)
   //Tell the MCP how to configure the pins the devices are connected to
-  const std::vector<uint8> MCP_interruptPins = 
+  /*const std::vector<uint8> MCP_interruptPins = 
     {
       K_MS,
       LR_MS
@@ -207,6 +216,18 @@ void setup() {
   //Setup steppers
   slidingDoor.setMCP(&mcp,LR_door_s1, LR_door_s3, LR_door_s2, LR_door_s4);
   slidingDoor.setMaxSpeed(stepperMaxSpeed);
+*/
+  //Setup lamps
+  pinMode(LR_standingLamp,OUTPUT);
+  pinMode(K_KI_ligths,OUTPUT);
+  pinMode(K_UC_lights,OUTPUT);
+  
+  //Setup motion sensors
+  pinMode(K_MS, INPUT);
+  attachInterrupt(digitalPinToInterrupt(K_MS), ISR_movementChanged, RISING);
+
+  pinMode(LR_MS, INPUT);
+  attachInterrupt(digitalPinToInterrupt(LR_MS), ISR_movementChanged, RISING);
 
   //Setup WS2812B RGB
   FastLED.addLeds<WS2812B, 5, GRB>(leds, RGB_size);
@@ -227,7 +248,7 @@ void loop() {
   //a message arrives on one of the topics we subscribed to
   mqttClient.loop();
   
-  slidingDoor.runSpeedToPosition();
+  //slidingDoor.runSpeedToPosition();
 
   if(lightingEffect)
     doLightingEffect(lightingEffect);
@@ -239,16 +260,17 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
 {
   //Let's see which pin caused the interrupt and read it's value
   //We have to read it in order to clear the interrupt
-  uint8 interruptPin = mcp.getLastInterruptPin();
-  bool somethingMoved = mcp.digitalRead(interruptPin) == HIGH;
+  //uint8 interruptPin = mcp.getLastInterruptPin();
+  //bool somethingMoved = mcp.digitalRead(interruptPin) == HIGH;
+  
   
   //For now we only care if they are trying to rob us
   if(!isSecuritySystemOn)
     return;
 
   //Trigger the alarm only for the Rising edge
-  if(!somethingMoved)
-    return;
+  //if(!somethingMoved)
+  //  return;
 
   //If the alarm is already on, dont trigger it again
   if(isAlarmOn)
@@ -261,7 +283,7 @@ ICACHE_RAM_ATTR void ISR_movementChanged()
   StaticJsonDocument<100> doc;
   doc["isOn"] = true;
   doc["user"] = "A Bad Person";
-  doc["room"] = pirToRoom[interruptPin];
+  doc["room"] = "Living room & Kitchen"; //pirToRoom[interruptPin];
 
   String message;
   serializeJson(doc, message);
@@ -313,7 +335,8 @@ void onMessage(String topic, byte *payload, unsigned int length)
     const int8 physicalPin = devIdToLamp[devId];
     if(physicalPin > -1)
     {
-      mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
+      //mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every lamp is connected to the mcu and not directly to the ESP
+      digitalWrite(physicalPin, doc["isOn"]);
       sendUpdate = true;
     }
   }
@@ -341,7 +364,8 @@ void onMessage(String topic, byte *payload, unsigned int length)
         const int8 physicalPin = devIdToSwitch[devId];
         if(physicalPin > -1)
         {
-          mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every switch is connected to the mcu and not directly to the ESP
+          //mcp.digitalWrite(physicalPin, doc["isOn"]); //for now we assume that every switch is connected to the mcu and not directly to the ESP
+          digitalWrite(physicalPin, doc["isOn"]);
           sendUpdate = true;
         }
     }
