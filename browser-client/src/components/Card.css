@@ -61,10 +61,10 @@
   justify-items: center;
   grid-template-areas:
     "temp img"
-    "br ."
-    "hum ."
-    "rain ."
-    "wind .";
+    "br br"
+    "hum hum"
+    "rain rain"
+    "wind rains";
 }
 
 .temperaturValue {
