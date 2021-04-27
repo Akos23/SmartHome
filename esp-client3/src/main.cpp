@@ -68,16 +68,17 @@ const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object
 const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
 
 //Connect servos to the ESP
-Servo MB_RightWindow;
-const uint8 MB_RightWindowPin = D6;
+//Servo MB_RightWindow;
+//const uint8 MB_RightWindowPin = D6;
 
-Servo MB_LeftWindow;
-const uint8 MB_LeftWindowPin = D7;
+//Servo MB_LeftWindow;
+//const uint8 MB_LeftWindowPin = D7;
 
 //Connect alarm to the ESP
 const uint8 alarm = D5;
 
 //Connect dimmer lights to the ESP
+const uint8 GB_dimmer = D7;
 const uint8 MB_dimmer = D8;
 
 
@@ -114,7 +115,7 @@ const int8 devIdToSwitch[] =
 const int8 devIdToDimmer[] =
 {
   MB_dimmer,
-  -1, //guest bedroom dimmer lights
+  GB_dimmer, //guest bedroom dimmer lights
 };
 
 struct ServoData
@@ -125,8 +126,8 @@ struct ServoData
 
 ServoData devIdToServo[] = 
 {
-  {&MB_RightWindow, true},
-  {&MB_LeftWindow, false}
+  {nullptr/*&MB_RightWindow*/, true},
+  {nullptr/*&MB_LeftWindow*/, false}
 };
 
 struct StepperData
@@ -194,6 +195,21 @@ int  LR_temperatureSetPoint = 23;
 // Setup and initialization
 ////////////////////////////////////////////////////////////////////////////
 
+//Tell the MCP how to configure the pins the devices are connected to
+const std::vector<uint8> MCP_interruptPins = 
+  {
+    MB_MS,
+    G_MS,
+  };
+
+const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
+{
+  G_lights,
+  MUX_s0,
+  MUX_s1,
+  MUX_s2
+};
+
 void setup() {
   
   //Setup alarm
@@ -207,30 +223,19 @@ void setup() {
   //Setup dimmer lights
   pinMode(MB_dimmer, OUTPUT);
   digitalWrite(MB_dimmer, LOW);
+  
+  pinMode(GB_dimmer, OUTPUT);
+  digitalWrite(GB_dimmer, LOW);
 
   //Setup servos
-  MB_RightWindow.write(150);
-  MB_LeftWindow.write(70);
-  MB_RightWindow.attach(MB_RightWindowPin);
-  MB_LeftWindow.attach(MB_LeftWindowPin);
+  //MB_RightWindow.write(150);
+  //MB_LeftWindow.write(70);
+  //MB_RightWindow.attach(MB_RightWindowPin);
+  //MB_LeftWindow.attach(MB_LeftWindowPin);
 
   //Setup MCP with interrupt
   //On MCP: interrupt on change
   //On ESP: interrupt on Falling edge (active low)
-  //Tell the MCP how to configure the pins the devices are connected to
-  const std::vector<uint8> MCP_interruptPins = 
-    {
-      MB_MS,
-      G_MS,
-    };
-
-  const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
-  {
-    G_lights,
-    MUX_s0,
-    MUX_s1,
-    MUX_s2
-  };
 
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
@@ -268,6 +273,9 @@ void loop() {
 
   getSensorReadings();
   
+  //In case an interrupt gets stuck
+  if(!digitalRead(D4))
+    clear_mcp_interrupts(mcp, MCP_interruptPins);
 }
 
 //This interrupt is triggered whenever the motion sensors output changes:
