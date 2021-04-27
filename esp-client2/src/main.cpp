@@ -56,8 +56,8 @@ const uint8 MCP_SDA = D2; //GPIO4 --> Wire.h already has a global TwoWire object
 const uint8 MCP_SCL = D1; //GPIO5     and the mcp library uses that object by default, so we wont do anything with these pins
 
 //Connect servos to the ESP
-Servo H_frontDoorLock;
-const uint8 H_frontDoorLockPin = D6;
+//Servo H_frontDoorLock;
+//const uint8 H_frontDoorLockPin = D6;
 
 //Conncect the RFID reader to the ESP
 const uint8 RFID_RST = D0;
@@ -65,7 +65,7 @@ const uint8 RFID_SDA = D8; //SS
 MFRC522 mfrc522(RFID_SDA, RFID_RST);
 
 //Connect dimmer lights to the ESP
-const uint8 GB_dimmer = 1; //TX
+//const uint8 GB_dimmer = D6; //1; //TX
 
 
 
@@ -101,7 +101,7 @@ const int8 devIdToSwitch[] =
 const int8 devIdToDimmer[] =
 {
   -1,//MB_dimmer,
-  GB_dimmer
+  -1,//GB_dimmer
 };
 
 // Not used...
@@ -194,35 +194,36 @@ int  LR_temperatureSetPoint = 23;
 // Setup and initialization
 ////////////////////////////////////////////////////////////////////////////
 
+//Tell the MCP how to configure the pins the devices are connected to
+const std::vector<uint8> MCP_interruptPins = 
+{
+  GB_MS,
+  B_MS,
+};
+
+const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
+{
+  B_lights,
+  H_lights1,
+  H_lights2,
+};
+
 void setup() {
   //Connect to local network
   setup_wifi();
   
   //Setup dimmer lights
-  pinMode(GB_dimmer, FUNCTION_3); //changes TX to regular GPIO pin
-  pinMode(GB_dimmer, OUTPUT);
-  digitalWrite(GB_dimmer, LOW);
+  //pinMode(GB_dimmer, FUNCTION_3); //changes TX to regular GPIO pin
+  //pinMode(GB_dimmer, OUTPUT);
+  //digitalWrite(GB_dimmer, LOW);
 
   //Setup servos
-  H_frontDoorLock.write(70);
-  H_frontDoorLock.attach(H_frontDoorLockPin);
+  //H_frontDoorLock.write(70);
+  //H_frontDoorLock.attach(H_frontDoorLockPin);
   
   //Setup MCP with interrupt
   //On MCP: interrupt on change
   //On ESP: interrupt on Falling edge (active low)
-   //Tell the MCP how to configure the pins the devices are connected to
-  const std::vector<uint8> MCP_interruptPins = 
-  {
-    GB_MS,
-    B_MS,
-  };
-
-  const std::vector<uint8> MCP_outputPins =   //stepper pins are set to OUTPUT in setMCP func.
-  {
-    B_lights,
-    H_lights1,
-    H_lights2,
-  };
 
   setup_mcp(mcp, MCP_interruptPins, MCP_outputPins);
   pinMode(MCP_INTB, INPUT);
@@ -252,9 +253,13 @@ void loop() {
   //a message arrives on one of the topics we subscribed to
   mqttClient.loop();
   
+  rollerBlind.runSpeedToPosition();
+
   checkForRFIDCard();
 
-  rollerBlind.runSpeedToPosition();
+  //In case an interrupt gets stuck
+  if(!digitalRead(D4))
+    clear_mcp_interrupts(mcp, MCP_interruptPins);
 }
 
 //This interrupt is triggered whenever the motion sensors output changes:
@@ -301,6 +306,8 @@ void checkForRFIDCard()
   if(millis()-prev < RFID_pollingIntervall)
     return; 
 
+  prev = millis();
+
   if ( ! mfrc522.PICC_IsNewCardPresent())
         return;
 
@@ -336,8 +343,6 @@ void checkForRFIDCard()
   String message;
   serializeJson(doc, message);
   mqttClient.publish("update/Hall/lock/0",message.c_str());
-
-  prev = millis();
 }
 
 void onMessage(String topic, byte *payload, unsigned int length)
@@ -471,7 +476,8 @@ void onMessage(String topic, byte *payload, unsigned int length)
   }
   else if(devType == "lock")
   {
-    H_frontDoorLock.write(doc["isLocked"] ? 70 : 120);
+    //H_frontDoorLock.write(doc["isLocked"] ? 70 : 120);
+    sendUpdate = true;
   }
 
   //////////////////////////////////////////////////////////////////////
