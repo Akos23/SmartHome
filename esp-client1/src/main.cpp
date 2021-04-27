@@ -354,7 +354,6 @@ void onMessage(String topic, byte *payload, unsigned int length)
         break;
       case 6:
         isSecuritySystemOn = doc["isOn"];
-        sendUpdate = true;
         break;
       case 7:
         isSilentAlarmOn = doc["isOn"];
